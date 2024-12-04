@@ -2,7 +2,8 @@
 /**  Ejemplo de BISON-I: S E M - 2          <jbenedi@dsic.upv.es>   V.24    **/
 /*****************************************************************************/
 %{
-  #include "stdio.h"
+#include <stdio.h>
+#include <string.h>
 #include "header.h"
 #include "asin.h"
 
@@ -20,18 +21,15 @@
 ----------------------------------------------------------------------*/
 %option yylineno
 
-delimitador     [ \t\n]+
-digito          [0-9]
-entero          {digito}+
-real            ([0-9]+([.][0-9]*)?|[.][0-9]+)
+delimitador     [\t\n]+
+numero          ([0-9]+([.][0-9]*)?|[.][0-9]+)
 id              [a-zA-Z][_a-zA-Z0-9]*
 comentario      ^\/\/.*\n
 %%
 
 {delimitador}   {if (verbosidad) ECHO ; }
 {comentario}    {if (verbosidad) ECHO ;}
-{real}          { retornar (CTE_) ; }
-{entero}        { retornar (CTE_) ; }
+
 "int"           { retornar (INT_) ; }
 "true"          { retornar (TRUE_) ; }
 "false"         { retornar (FALSE_) ; }
@@ -42,6 +40,7 @@ comentario      ^\/\/.*\n
 "if"            { retornar (IF_) ; }
 "else"          { retornar (ELSE_) ; }
 "for"           { retornar (FOR_) ; }
+
 ">="            { retornar (MAYI_) ; }
 "<="            { retornar (MENI_) ; }
 "&&"            { retornar (AND_) ; }
@@ -66,4 +65,13 @@ comentario      ^\/\/.*\n
 "!"             { retornar (NOT_) ; }
 {id}            { retornar (ID_) ; }
 .				{ yyerror("Caracter desconocido") ;}
+
+{numero}        { yylval.cent = atoi(yytext); return(CTE_); }
+{id}            { yylval.ident = strdup(yytext); return(ID_); }
+
+<<EOF>>         { if (verbosidad) { fprintf(stdout, "\n"); } return 0; } 
+.               { if (verbosidad) { 
+                  fprintf(stdout, "<"); ECHO; fprintf(stdout, "> "); } 
+                  yyerror("Caracter desconocido");
+                } 
 %%
