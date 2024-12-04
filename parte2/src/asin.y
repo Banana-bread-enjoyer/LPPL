@@ -54,8 +54,26 @@ decla   : declaVar
        | declaFunc       
        ;
 declaVar : tipoSimp ID_ PUNTC_  
+       {
+              if (!insTdS($2, VARIABLE, $1, niv, dvar, -1)) yyerror("Identificador repetido");
+              else dvar += TALLA_TIPO_SIMPLE;
+       }
        | tipoSimp ID_ IGUAL_ const PUNTC_ 
-       | tipoSimp ID_ CORA_ CTE_ CORC_ PUNTC_            
+       {
+              if (!insTdS($2, VARIABLE, $1, niv, dvar, -1)) yyerror("Identificador repetido");
+              else dvar += TALLA_TIPO_SIMPLE;
+       }
+       | tipoSimp ID_ CORA_ CTE_ CORC_ PUNTC_    
+       {
+              int numelem = $4;
+              if ($4 <= 0) {
+                     yyerror("Talla inapropiada del array");
+                     numelem = 0;
+              }
+              int refe = insTdA($1, numelem);
+              if (!insTdS($2, VARIABLE, T_ARRAY, niv, dvar, refe)) yyerror("Identificador repetido");
+              else dvar += numelem * TALLA_TIPO_SIMPLE;
+       }        
        ;
 const : CTE_ 
        | TRUE_
