@@ -82,7 +82,13 @@ const : CTE_
 tipoSimp : INT_ 
        | BOOL_
        ;
-declaFunc : tipoSimp ID_ PARA_ paramForm PARC_ bloque
+declaFunc : tipoSimp ID_ 
+       {
+              
+       }
+       PARA_ paramForm PARC_ 
+       bloque
+       
        ;
 paramForm : 
        | listParamForm
