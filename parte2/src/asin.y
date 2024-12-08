@@ -84,10 +84,16 @@ tipoSimp : INT_
        ;
 declaFunc : tipoSimp ID_ 
        {
-              
+
        }
        PARA_ paramForm PARC_ 
+       {
+
+       }
        bloque
+       {
+
+       }
        
        ;
 paramForm : 
@@ -125,7 +131,25 @@ expreOP :
        ;
 expre : expreLogic
        | ID_ IGUAL_ expre
+       {
+              SIMB sim = obtTdS($1);
+              if (sim.t == T.ERROR) yyerror("Objeto no declarado");
+              else if (!(((sim.t == T_LOGICO) && ($3.t == T_LOGICO)) || (sim.t == T_ENTERO) && ($3.t == T_ENTERO)))
+                     yyerror("Error de tipos en la asignación")
+       }
        | ID_ CORA_ expre CORC_ IGUAL_ expre
+       {
+              DIM dim = obtTdA($1);
+              if (!($3.t == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
+              else {
+                     int pos = $3
+                     if (pos < 0) yyerror("La posición de un array debe ser positiva")
+                     else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array")
+              }
+              int tipoArray = dim.telem;
+              if (!((tipoArray == T_ENTERO) && ($6.t == T_ENTERO) ||
+                     (tipoArray == T_LOGICO) && ($6.t == T_LOGICO))) yyerror("Error de tipos en la asignación")
+       }
        ;
 expreLogic : expreIgual 
        | expreLogic opLogic expreIgual
