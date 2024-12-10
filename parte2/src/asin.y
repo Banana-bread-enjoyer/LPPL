@@ -28,11 +28,11 @@
 %type<cent> operadorAditivo operadorRelacional operadorIgualdad cabeceraFuncion
 %type<cent> operadorLogico parametrosFormales parametrosActuales listaParametrosActuales declaracionVariable declaracionFuncion declaracion
 %type<cent> instruccionAsignacion listaDeclaraciones
-
+%type<cent> listParamForm
 %type<lpf> listaParametrosFormales
 
 %type <cent> expresionMultiplicativa expresionAditiva expresionSufija expresionUnaria 
-%type <cent> expresion expresionRelacional expresionIgualdad expresionOpcional
+%type <cent> expre expresionRelacional expresionIgualdad expresionOpcional
 
 %%
 
@@ -83,24 +83,41 @@ tipoSimp : INT_
        | BOOL_
        ;
 declaFunc : tipoSimp ID_ 
-       {
-
+       {      
+              $<cent>$ = dvar;
+              niv++;
+              cargaContexto(niv);
        }
        PARA_ paramForm PARC_ 
        {
-
+              
+              if(!insTdS($2, FUNCION, $1, niv, dvar, $5)) {
+                     yyerror("Identificador repetido");
+              }
        }
        bloque
        {
-
+              dvar = $<cent>3;
+              descargaContexto(niv);
+              niv--;
        }
        
        ;
 paramForm : 
+       {
+              $$ = insTdD(-1, T_VACIO);
+       }
        | listParamForm
        ;
 listParamForm: tipoSimp ID_
+       {
+              $$ = insTdD(-1, $1);
+       }
        | tipoSimp ID_ COMA_ listParamForm
+       {
+              insTdD($4, $1);
+              $$ = $4;
+       }
        ;
 bloque : BRAA_ declaVarLocal listInt RETURN_ expre PUNTC_ BRAC_
        ;
@@ -134,21 +151,22 @@ expre : expreLogic
        {
               SIMB sim = obtTdS($1);
               if (sim.t == T.ERROR) yyerror("Objeto no declarado");
-              else if (!(((sim.t == T_LOGICO) && ($3.t == T_LOGICO)) || (sim.t == T_ENTERO) && ($3.t == T_ENTERO)))
+              if ($3 == T_ERROR) $$ = T_ERROR;
+              else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || (sim.t == T_ENTERO) && ($3 == T_ENTERO)))
                      yyerror("Error de tipos en la asignación")
        }
        | ID_ CORA_ expre CORC_ IGUAL_ expre
        {
               DIM dim = obtTdA($1);
-              if (!($3.t == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
+              if (!($3 == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
               else {
                      int pos = $3
                      if (pos < 0) yyerror("La posición de un array debe ser positiva")
                      else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array")
               }
               int tipoArray = dim.telem;
-              if (!((tipoArray == T_ENTERO) && ($6.t == T_ENTERO) ||
-                     (tipoArray == T_LOGICO) && ($6.t == T_LOGICO))) yyerror("Error de tipos en la asignación")
+              if (!((tipoArray == T_ENTERO) && ($6 == T_ENTERO) ||
+                     (tipoArray == T_LOGICO) && ($6 == T_LOGICO))) yyerror("Error de tipos en la asignación")
        }
        ;
 expreLogic : expreIgual 
