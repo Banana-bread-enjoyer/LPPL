@@ -161,8 +161,11 @@ instSelec : IF_ PARA_ expre PARC_ inst ELSE_ inst
        ;
 instIter : FOR_ PARA_ expreOP PUNTC_ expre PUNTC_ expreOP PARC_ inst
        ;
-expreOP :
-       | expre
+expreOP : { $$ = T_VACIO; }
+       | expre 
+       {
+              $$ = $1;
+       }
        ;
 expre : expreLogic
        | ID_ IGUAL_ expre
@@ -187,23 +190,49 @@ expre : expreLogic
                      (tipoArray == T_LOGICO) && ($6 == T_LOGICO))) yyerror("Error de tipos en la asignación")
        }
        ;
-expreLogic : expreIgual 
+expreLogic : expreIgual { $$ = $1; }
        | expreLogic opLogic expreIgual
+       {
+              if($1 != T_ERROR && 3 != T_ERROR)
+              {
+                     if()
+              }
+       }
        ;
-expreIgual : expreRel 
+
+expreIgual : expreRel { $$ = $1; }
        | expreIgual opIgual expreRel
        ;
-expreRel : expreAd
+expreRel : expreAd { $$ = $1; }
        | expreRel opRel expreAd
-       ;
-expreAd : expreMul 
+       ; 
+expreAd : expreMul { $$ = $1; }
        | expreAd opAd expreMul 
        ;
-expreMul : expreUna
+expreMul : expreUna { $$ = $1; }
        | expreMul opMul expreUna
        ;
-expreUna : expreSufi
+expreUna : expreSufi { $$ = $1; }
        | opUna expreUna
+       {
+              if($2 != T_ERROR){
+                     if($2 == T_ENTERO){
+                            if($1 == NOT_){
+                                   yyerror("Operacion ! no es correcta para enteros");
+                            } else{
+                                   $$ = T_ENTERO;
+                            }
+                     }else if ($2 = T_LOGICO){
+                            if($1 == NOT_){
+                                   $$ = T_LOGICO;
+                            }else{
+                                   yyerror("Operacion + / - no son correctas para booleanos");                                  
+                            }
+                     }
+              }else{
+                     $$ = T_ERROR;
+              }
+       }
        ;
 expreSufi: const
        {
