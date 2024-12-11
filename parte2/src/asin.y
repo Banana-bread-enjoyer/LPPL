@@ -75,8 +75,17 @@ declaVar : tipoSimp ID_ PUNTC_
        }        
        ;
 const : CTE_ 
+       {
+              $$ = T_ENTERO;
+       }
        | TRUE_
-       | FALSE_
+       {
+              $$ = T_LOGICO;
+       }
+       | FALSE_ 
+       {
+              $$ = T_LOGICO;
+       }
        ;
 tipoSimp : INT_ 
        {
@@ -90,13 +99,14 @@ tipoSimp : INT_
 declaFunc : tipoSimp ID_ 
        {      
               $<cent>$ = dvar;
+              dvar = 0;
               niv++;
               cargaContexto(niv);
        }
        PARA_ paramForm PARC_ 
        {
               
-              if(!insTdS($2, FUNCION, $1, niv, dvar, $5)) {
+              if(!insTdS($2, FUNCION, $1, 0, dvar, $5)) {
                      yyerror("Identificador repetido");
               }
        }
@@ -196,10 +206,25 @@ expreUna : expreSufi
        | opUna expreUna
        ;
 expreSufi: const
+       {
+              $$ = $1;
+       }
        | PARA_ expre PARC_
+       {
+              $$ = $2;
+       }
        | ID_
+       {
+
+       }
        | ID_ CORA_ expre CORC_
+       {
+
+       }
        | ID_ PARA_ paramAct PARC_
+       {
+
+       }
        ;
 paramAct :
        | listParamAct
