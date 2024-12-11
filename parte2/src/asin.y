@@ -29,7 +29,7 @@
 %type<cent> operadorLogico parametrosFormales parametrosActuales listaParametrosActuales declaracionVariable declaracionFuncion declaracion
 %type<cent> instruccionAsignacion listaDeclaraciones
 %type<cent> listParamForm
-%type<lpf> listaParametrosFormales
+%type<lpf> listParametrosFormales
 
 %type <cent> expresionMultiplicativa expresionAditiva expresionSufija expresionUnaria 
 %type <cent> expre expresionRelacional expresionIgualdad expresionOpcional
