@@ -24,15 +24,14 @@
 %token<cent> CTE_ 
 %token<ident> ID_
 
-%type<cent> tipoSimple opUnario opInc operadorMultiplicativo constante
-%type<cent> operadorAditivo operadorRelacional operadorIgualdad cabeceraFuncion
-%type<cent> operadorLogico parametrosFormales parametrosActuales listaParametrosActuales declaracionVariable declaracionFuncion declaracion
-%type<cent> instruccionAsignacion listaDeclaraciones
-%type<cent> listParamForm
+%type<cent> tipoSimp opUna opInc opMul opAd opRel opIgual opLogic const
+%type<cent> paramForm listParamForm  paramAct listParamAct
+%type<cent> listInt inst  instExpre instSelec instEntSal instIter
+%type<cent> listDecla declaVar declaFunc decla declaVarLocal bloque
 %type<lpf> listaParametrosFormales
 
-%type <cent> expresionMultiplicativa expresionAditiva expresionSufija expresionUnaria 
-%type <cent> expre expresionRelacional expresionIgualdad expresionOpcional
+%type <cent> expreMul expreAd expreSufi expreUna expreLogic
+%type <cent> expre expreRel expreIgual expreOP
 
 %%
 
