@@ -28,7 +28,7 @@
 %type<cent> paramForm listParamForm  paramAct listParamAct
 %type<cent> listInt inst  instExpre instSelec instEntSal instIter
 %type<cent> listDecla declaVar declaFunc decla declaVarLocal bloque
-%type<lpf> listaParametrosFormales
+%type<lpf> listParametrosFormales
 
 %type <cent> expreMul expreAd expreSufi expreUna expreLogic
 %type <cent> expre expreRel expreIgual expreOP
@@ -79,7 +79,13 @@ const : CTE_
        | FALSE_
        ;
 tipoSimp : INT_ 
-       | BOOL_
+       {
+              $$ = T_ENTERO;
+       }
+       | BOOL_ 
+       {
+              $$ = T_LOGICO;
+       }
        ;
 declaFunc : tipoSimp ID_ 
        {      
@@ -107,6 +113,9 @@ paramForm :
               $$ = insTdD(-1, T_VACIO);
        }
        | listParamForm
+       {
+              $$ = $1;
+       }
        ;
 listParamForm: tipoSimp ID_
        {
