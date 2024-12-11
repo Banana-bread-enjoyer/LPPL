@@ -80,7 +80,13 @@ const : CTE_
        | FALSE_
        ;
 tipoSimp : INT_ 
-       | BOOL_
+       {
+              $$ = T_ENTERO;
+       }
+       | BOOL_ 
+       {
+              $$ = T_LOGICO;
+       }
        ;
 declaFunc : tipoSimp ID_ 
        {      
@@ -108,6 +114,9 @@ paramForm :
               $$ = insTdD(-1, T_VACIO);
        }
        | listParamForm
+       {
+              $$ = $1;
+       }
        ;
 listParamForm: tipoSimp ID_
        {
