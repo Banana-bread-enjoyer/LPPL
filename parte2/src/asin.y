@@ -223,14 +223,29 @@ expreSufi: const
        }
        | ID_ PARA_ paramAct PARC_
        {
-
+              SIMB simb = obtTdS($1);
+              int ref1 = simb.ref;
+              if (!cmpDom(ref1, $3)) yyerror("Argumentos no coincidentes.");
        }
        ;
 paramAct :
+       {
+              $$ = insTdD(-1, T_VACIO);
+       }
        | listParamAct
+       {
+              $$ = $1;
+       }
        ;
 listParamAct : expre 
+       {
+              $$ = insTdD(-1, $1);
+       }
        | expre COMA_ listParamAct
+       {
+              insTdD($4, $1);
+              $$ = $4;
+       }
        ;
 opLogic : AND_
        | OR_
