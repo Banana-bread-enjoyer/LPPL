@@ -60,35 +60,35 @@ extern int yydebug;
     MENOS_ = 261,                  /* MENOS_  */
     POR_ = 262,                    /* POR_  */
     DIV_ = 263,                    /* DIV_  */
-    CTE_ = 264,                    /* CTE_  */
-    INT_ = 265,                    /* INT_  */
-    ID_ = 266,                     /* ID_  */
-    PUNTC_ = 267,                  /* PUNTC_  */
-    IGUAL_ = 268,                  /* IGUAL_  */
-    CORA_ = 269,                   /* CORA_  */
-    CORC_ = 270,                   /* CORC_  */
-    TRUE_ = 271,                   /* TRUE_  */
-    FALSE_ = 272,                  /* FALSE_  */
-    BOOL_ = 273,                   /* BOOL_  */
-    BRAA_ = 274,                   /* BRAA_  */
-    BRAC_ = 275,                   /* BRAC_  */
-    RETURN_ = 276,                 /* RETURN_  */
-    READ_ = 277,                   /* READ_  */
-    PRINT_ = 278,                  /* PRINT_  */
-    IF_ = 279,                     /* IF_  */
-    ELSE_ = 280,                   /* ELSE_  */
-    FOR_ = 281,                    /* FOR_  */
-    COMA_ = 282,                   /* COMA_  */
-    MAYOR_ = 283,                  /* MAYOR_  */
-    MENOR_ = 284,                  /* MENOR_  */
-    MAYI_ = 285,                   /* MAYI_  */
-    MENI_ = 286,                   /* MENI_  */
-    NOT_ = 287,                    /* NOT_  */
-    AND_ = 288,                    /* AND_  */
-    OR_ = 289,                     /* OR_  */
-    EQUALS_ = 290,                 /* EQUALS_  */
-    NOTEQUAL_ = 291,               /* NOTEQUAL_  */
-    DOU_BAR_ = 292                 /* DOU_BAR_  */
+    INT_ = 264,                    /* INT_  */
+    PUNTC_ = 265,                  /* PUNTC_  */
+    IGUAL_ = 266,                  /* IGUAL_  */
+    CORA_ = 267,                   /* CORA_  */
+    CORC_ = 268,                   /* CORC_  */
+    TRUE_ = 269,                   /* TRUE_  */
+    FALSE_ = 270,                  /* FALSE_  */
+    BOOL_ = 271,                   /* BOOL_  */
+    BRAA_ = 272,                   /* BRAA_  */
+    BRAC_ = 273,                   /* BRAC_  */
+    RETURN_ = 274,                 /* RETURN_  */
+    READ_ = 275,                   /* READ_  */
+    PRINT_ = 276,                  /* PRINT_  */
+    IF_ = 277,                     /* IF_  */
+    ELSE_ = 278,                   /* ELSE_  */
+    FOR_ = 279,                    /* FOR_  */
+    COMA_ = 280,                   /* COMA_  */
+    MAYOR_ = 281,                  /* MAYOR_  */
+    MENOR_ = 282,                  /* MENOR_  */
+    MAYI_ = 283,                   /* MAYI_  */
+    MENI_ = 284,                   /* MENI_  */
+    NOT_ = 285,                    /* NOT_  */
+    AND_ = 286,                    /* AND_  */
+    OR_ = 287,                     /* OR_  */
+    EQUALS_ = 288,                 /* EQUALS_  */
+    NOTEQUAL_ = 289,               /* NOTEQUAL_  */
+    DOU_BAR_ = 290,                /* DOU_BAR_  */
+    CTE_ = 291,                    /* CTE_  */
+    ID_ = 292                      /* ID_  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -103,7 +103,7 @@ union YYSTYPE
     int cent; 
     LPF lpf;
 
-#line 102 "asin.h"
+#line 107 "asin.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

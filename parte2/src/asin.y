@@ -15,7 +15,7 @@
 }
 
 %token PARA_ PARC_ MAS_ MENOS_ POR_ DIV_
-%token CTE_ INT_ ID_ PUNTC_ IGUAL_ CORA_ CORC_
+%token INT_ PUNTC_ IGUAL_ CORA_ CORC_
 %token TRUE_ FALSE_ BOOL_ BRAA_ BRAC_ RETURN_
 %token READ_ PRINT_ IF_ ELSE_ FOR_ COMA_
 %token MAYOR_ MENOR_ MAYI_ MENI_ NOT_ AND_ 
@@ -24,11 +24,10 @@
 %token<cent> CTE_ 
 %token<ident> ID_
 
-%type<cent> tipoSimp opUna opInc opMul opAd opRel opIgual opLogic const
+%type<cent> tipoSimp opUna opMul opAd opRel opIgual opLogic const
 %type<cent> paramForm listParamForm  paramAct listParamAct
 %type<cent> listInt inst  instExpre instSelec instEntSal instIter
 %type<cent> listDecla declaVar declaFunc decla declaVarLocal bloque
-%type<lpf> listParametrosFormales
 
 %type <cent> expreMul expreAd expreSufi expreUna expreLogic
 %type <cent> expre expreRel expreIgual expreOP
@@ -41,7 +40,7 @@ programa :
               niv = 0; 
               cargaContexto(niv);
          }
-         listaDecla
+         listDecla
          {
               if($2==0){yyerror("Se debe declarar al menos la función main()");}
          }
@@ -171,23 +170,23 @@ expre : expreLogic
        | ID_ IGUAL_ expre
        {
               SIMB sim = obtTdS($1);
-              if (sim.t == T.ERROR) yyerror("Objeto no declarado");
+              if (sim.t == T_ERROR) yyerror("Objeto no declarado");
               if ($3 == T_ERROR) $$ = T_ERROR;
               else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || (sim.t == T_ENTERO) && ($3 == T_ENTERO)))
-                     yyerror("Error de tipos en la asignación")
+                     yyerror("Error de tipos en la asignación");
        }
        | ID_ CORA_ expre CORC_ IGUAL_ expre
        {
               DIM dim = obtTdA($1);
               if (!($3 == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
               else {
-                     int pos = $3
-                     if (pos < 0) yyerror("La posición de un array debe ser positiva")
-                     else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array")
+                     int pos = $3;
+                     if (pos < 0) yyerror("La posición de un array debe ser positiva");
+                     else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
               }
               int tipoArray = dim.telem;
               if (!((tipoArray == T_ENTERO) && ($6 == T_ENTERO) ||
-                     (tipoArray == T_LOGICO) && ($6 == T_LOGICO))) yyerror("Error de tipos en la asignación")
+                     (tipoArray == T_LOGICO) && ($6 == T_LOGICO))) yyerror("Error de tipos en la asignación");
        }
        ;
 expreLogic : expreIgual { $$ = $1; }
@@ -195,7 +194,7 @@ expreLogic : expreIgual { $$ = $1; }
        {
               if($1 != T_ERROR && $3 != T_ERROR)
               {
-                     if($1 != T_LOGICO || $3 != T_LOGICO) yyerror("Error de tipos en la asignación")
+                     if($1 != T_LOGICO || $3 != T_LOGICO) yyerror("Error de tipos en la asignación");
               }
               else{yyerror("Objeto no declarado");}
        }
@@ -289,8 +288,8 @@ listParamAct : expre
        }
        | expre COMA_ listParamAct
        {
-              insTdD($4, $1);
-              $$ = $4;
+              insTdD($3, $1);
+              $$ = $3;
        }
        ;
 opLogic : AND_
