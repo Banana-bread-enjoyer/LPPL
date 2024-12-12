@@ -193,10 +193,11 @@ expre : expreLogic
 expreLogic : expreIgual { $$ = $1; }
        | expreLogic opLogic expreIgual
        {
-              if($1 != T_ERROR && 3 != T_ERROR)
+              if($1 != T_ERROR && $3 != T_ERROR)
               {
-                     if()
+                     if($1 != T_LOGICO || $3 != T_LOGICO) yyerror("Error de tipos en la asignación")
               }
+              else{yyerror("Objeto no declarado");}
        }
        ;
 
@@ -208,9 +209,25 @@ expreRel : expreAd { $$ = $1; }
        ; 
 expreAd : expreMul { $$ = $1; }
        | expreAd opAd expreMul 
+       {
+              if($1 != T_ERROR && $3 != T_ERROR)
+              {
+                     if($1 != T_ENTERO || $3 != T_ENTERO) yyerror("Error de tipos en la asignación");
+                     {$$ = $3;}
+              }
+              else{yyerror("Objeto no declarado");}
+       }
        ;
 expreMul : expreUna { $$ = $1; }
        | expreMul opMul expreUna
+       {
+              if($1 != T_ERROR && $3 != T_ERROR)
+              {
+                     if($1 != T_ENTERO || $3 != T_ENTERO) yyerror("Error de tipos en la asignación");
+                     else{$$ = $3;}
+              }
+              else{yyerror("Objeto no declarado");}
+       }
        ;
 expreUna : expreSufi { $$ = $1; }
        | opUna expreUna
