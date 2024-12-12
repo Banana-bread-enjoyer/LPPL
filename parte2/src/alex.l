@@ -21,10 +21,10 @@
 ----------------------------------------------------------------------*/
 %option yylineno
 
-delimitador     [\t\n]+
+delimitador     [ \t\n]+
 numero          ([0-9]+([.][0-9]*)?|[.][0-9]+)
 id              [a-zA-Z][_a-zA-Z0-9]*
-comentario      ^\/\/.*\n
+comentario      [\/][\/].*
 %%
 
 {delimitador}   {if (verbosidad) ECHO ; }
@@ -63,15 +63,11 @@ comentario      ^\/\/.*\n
 ">"             { retornar (MAYOR_) ; }
 "<"             { retornar (MENOR_) ; }
 "!"             { retornar (NOT_) ; }
-{id}            { retornar (ID_) ; }
-.				{ yyerror("Caracter desconocido") ;}
 
-{numero}        { yylval.cent = atoi(yytext); return(CTE_); }
-{id}            { yylval.ident = strdup(yytext); return(ID_); }
+{numero}        { yylval.cent = atoi(yytext); retornar(CTE_); }
+{id}            { yylval.ident = strdup(yytext); retornar(ID_); }
 
-<<EOF>>         { if (verbosidad) { fprintf(stdout, "\n"); } return 0; } 
-.               { if (verbosidad) { 
-                  fprintf(stdout, "<"); ECHO; fprintf(stdout, "> "); } 
+.               { if (verbosidad) {  ECHO;  } 
                   yyerror("Caracter desconocido");
                 } 
 %%
