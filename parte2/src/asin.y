@@ -82,7 +82,11 @@ declaVar : tipoSimp ID_ PUNTC_
        | tipoSimp ID_ IGUAL_ const PUNTC_ 
        {
               if (!insTdS($2, VARIABLE, $1, niv, dvar, -1)) yyerror("Identificador repetido");
-              else dvar += TALLA_TIPO_SIMPLE;
+              else 
+              {
+                     if($1 != $4) yyerror("Error de tipos en la asignación expre");
+                     else dvar += TALLA_TIPO_SIMPLE;
+              }
        }
        | tipoSimp ID_ CORA_ CTE_ CORC_ PUNTC_    
        {
