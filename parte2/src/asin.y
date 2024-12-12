@@ -46,12 +46,15 @@ programa :
               if($2==0){yyerror("Se debe declarar al menos la función main()");}
          }
        ;
+
 listDecla : decla
        | listDecla decla
        ;
+
 decla   : declaVar
        | declaFunc       
        ;
+
 declaVar : tipoSimp ID_ PUNTC_  
        {
               if (!insTdS($2, VARIABLE, $1, niv, dvar, -1)) yyerror("Identificador repetido");
@@ -74,6 +77,7 @@ declaVar : tipoSimp ID_ PUNTC_
               else dvar += numelem * TALLA_TIPO_SIMPLE;
        }        
        ;
+
 const : CTE_ 
        {
               $$ = T_ENTERO;
@@ -87,6 +91,7 @@ const : CTE_
               $$ = T_LOGICO;
        }
        ;
+
 tipoSimp : INT_ 
        {
               $$ = T_ENTERO;
@@ -96,6 +101,7 @@ tipoSimp : INT_
               $$ = T_LOGICO;
        }
        ;
+
 declaFunc : tipoSimp ID_ 
        {      
               $<cent>$ = dvar;
@@ -116,8 +122,8 @@ declaFunc : tipoSimp ID_
               descargaContexto(niv);
               niv--;
        }
-       
        ;
+
 paramForm : 
        {
               $$ = insTdD(-1, T_VACIO);
@@ -127,6 +133,7 @@ paramForm :
               $$ = $1;
        }
        ;
+
 listParamForm: tipoSimp ID_
        {
               $$ = insTdD(-1, $1);
@@ -137,36 +144,46 @@ listParamForm: tipoSimp ID_
               $$ = $4;
        }
        ;
+
 bloque : BRAA_ declaVarLocal listInt RETURN_ expre PUNTC_ BRAC_
        ;
+
 declaVarLocal : 
        | declaVarLocal declaVar
        ;
+
 listInt : 
        | listInt inst
        ;
+
 inst : BRAA_ listInt BRAC_
        | instExpre
        | instEntSal
        | instSelec
        | instIter
        ;
+
 instExpre : expre PUNTC_
        | PUNTC_
        ;
+
 instEntSal : READ_ PARA_ ID_ PARC_ PUNTC_
        | PRINT_ PARA_ expre PARC_ PUNTC_
        ;
+
 instSelec : IF_ PARA_ expre PARC_ inst ELSE_ inst
        ;
+
 instIter : FOR_ PARA_ expreOP PUNTC_ expre PUNTC_ expreOP PARC_ inst
        ;
+
 expreOP : { $$ = T_VACIO; }
        | expre 
        {
               $$ = $1;
        }
        ;
+
 expre : expreLogic
        | ID_ IGUAL_ expre
        {
@@ -190,12 +207,14 @@ expre : expreLogic
                      (tipoArray == T_LOGICO) && ($6 == T_LOGICO))) yyerror("Error de tipos en la asignación")
        }
        ;
+
 expreLogic : expreIgual { $$ = $1; }
        | expreLogic opLogic expreIgual
        {
               if($1 != T_ERROR && $3 != T_ERROR)
               {
                      if($1 != T_LOGICO || $3 != T_LOGICO) yyerror("Error de tipos en la asignación")
+                     else{$$ = $3;}
               }
               else{yyerror("Objeto no declarado");}
        }
@@ -203,21 +222,40 @@ expreLogic : expreIgual { $$ = $1; }
 
 expreIgual : expreRel { $$ = $1; }
        | expreIgual opIgual expreRel
+       {
+              if($1 != T_ERROR && $3 != T_ERROR)
+              {
+                     if($1 != $3) yyerror("Error de tipos en la asignación");
+                     else{$$ = $3;}
+              }
+              else{yyerror("Objeto no declarado");}
+       }
        ;
+
 expreRel : expreAd { $$ = $1; }
        | expreRel opRel expreAd
+       {
+              if($1 != T_ERROR && $3 != T_ERROR)
+              {
+                     if($1 != T_ENTERO || $3 != T_ENTERO) yyerror("Error de tipos en la asignación");
+                     else{$$ = $3;}
+              }
+              else{yyerror("Objeto no declarado");}
+       }
        ; 
+
 expreAd : expreMul { $$ = $1; }
        | expreAd opAd expreMul 
        {
               if($1 != T_ERROR && $3 != T_ERROR)
               {
                      if($1 != T_ENTERO || $3 != T_ENTERO) yyerror("Error de tipos en la asignación");
-                     {$$ = $3;}
+                     else{$$ = $3;}
               }
               else{yyerror("Objeto no declarado");}
        }
        ;
+
 expreMul : expreUna { $$ = $1; }
        | expreMul opMul expreUna
        {
@@ -229,6 +267,7 @@ expreMul : expreUna { $$ = $1; }
               else{yyerror("Objeto no declarado");}
        }
        ;
+
 expreUna : expreSufi { $$ = $1; }
        | opUna expreUna
        {
@@ -251,6 +290,7 @@ expreUna : expreSufi { $$ = $1; }
               }
        }
        ;
+
 expreSufi: const
        {
               $$ = $1;
@@ -274,6 +314,7 @@ expreSufi: const
               if (!cmpDom(ref1, $3)) yyerror("Argumentos no coincidentes.");
        }
        ;
+
 paramAct :
        {
               $$ = insTdD(-1, T_VACIO);
@@ -283,6 +324,7 @@ paramAct :
               $$ = $1;
        }
        ;
+
 listParamAct : expre 
        {
               $$ = insTdD(-1, $1);
@@ -293,23 +335,29 @@ listParamAct : expre
               $$ = $4;
        }
        ;
+
 opLogic : AND_
        | OR_
        ;
+
 opIgual : EQUALS_
        | NOTEQUAL_
        ;
+
 opRel : MAYOR_
        | MENOR_
        | MAYI_
        | MENI_
        ;
+
 opAd : MAS_
        | MENOS_
        ;
+
 opMul : POR_
        | DIV_
        ;
+
 opUna : MAS_
        | MENOS_
        | NOT_
