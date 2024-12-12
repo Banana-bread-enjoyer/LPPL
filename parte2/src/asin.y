@@ -35,16 +35,16 @@
 %%
 
 programa : 
-         {
+       {
               dvar = 0;
               niv = 0; 
               cargaContexto(niv);
-         }
-         listDecla
-         {
+       }
+       listDecla
+       {
               if($2==0){yyerror("Se debe declarar al menos la función main()");}
               mostrarTdS();
-         }
+       }
 
        ;
 
@@ -64,7 +64,10 @@ listDecla : decla
        }
        ;
 
-decla   : declaVar
+decla  : declaVar
+       {
+              $$ = $1;
+       }   
        | declaFunc
        {
               $$ = $1;
