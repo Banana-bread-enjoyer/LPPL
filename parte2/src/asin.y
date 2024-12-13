@@ -266,7 +266,7 @@ expre : expreLogic
               if (sim.t == T_ERROR) yyerror("Objeto no declarado");
               else {
                      if ($3 == T_ERROR) $$ = T_ERROR;
-                     else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || (sim.t == T_ENTERO) && ($3 == T_ENTERO)))
+                     else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3 == T_ENTERO))))
                             yyerror("Error de tipos en la asignación expre2");
                             else $$ = $3;
               }
@@ -287,8 +287,8 @@ expre : expreLogic
                      }
                      int tipoArray = dim.telem;
                      if (tipoArray != T_ERROR) {
-                            if (!((tipoArray == T_ENTERO) && ($6 == T_ENTERO) ||
-                                   (tipoArray == T_LOGICO) && ($6 == T_LOGICO))) yyerror("Error de tipos en la asignación expre3");
+                            if (!(((tipoArray == T_ENTERO) && ($6 == T_ENTERO)) ||
+                                   ((tipoArray == T_LOGICO) && ($6 == T_LOGICO)))) yyerror("Error de tipos en la asignación expre3");
                             else $$ = T_ARRAY;
                      } else {
                             $$ = T_ERROR;
