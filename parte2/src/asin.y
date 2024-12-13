@@ -137,13 +137,20 @@ declaFunc : tipoSimp ID_
        }
        PARA_ paramForm PARC_ 
        {
-              
-              if(!insTdS($2, FUNCION, $1, 0, dvar, $5)) {
+              dvar = 0;
+              if(!insTdS($2, FUNCION, $1, 0, 0, $5)) {
                      yyerror("Identificador repetido");
+              }
+              if ($5 == -1) {
+                     $<cent>$ = T_ERROR;
               }
        }
        bloque
        {
+              printf("\n\n%d %d\n\n", $1, $8);
+              if ($1 != $8) {
+                     yyerror("Tipo de retorno incorrecto");
+              }
               dvar = $<cent>3;
               mostrarTdS();
               descargaContexto(niv);
@@ -168,16 +175,26 @@ paramForm :
 
 listParamForm: tipoSimp ID_
        {
+              insTdS($2, PARAMETRO, $1, niv,--dvar, -1);
               $$ = insTdD(-1, $1);
        }
        | tipoSimp ID_ COMA_ listParamForm
-       {
+       { 
               insTdD($4, $1);
+              int tds = insTdS($2, PARAMETRO, $1, niv, --dvar, -1);
+              if (tds == 0) {
+                     yyerror("Identificador de parámetro repetido");
+              }
               $$ = $4;
+              
        }
        ;
 
 bloque : BRAA_ declaVarLocal listInt RETURN_ expre PUNTC_ BRAC_
+       {
+              
+              $$ = $5;
+       }
        ;
 
 declaVarLocal : 
@@ -219,7 +236,16 @@ instEntSal : READ_ PARA_ ID_ PARC_ PUNTC_
        }
        ;
 
-instSelec : IF_ PARA_ expre PARC_ inst ELSE_ inst
+instSelec : IF_ PARA_ expre 
+       {
+              
+              if ($3 != T_LOGICO) {
+                     yyerror("La expresión de comprobación del 'if' ha de ser de tipo LÓGICO");
+              }
+       
+       }
+       PARC_ inst ELSE_ inst
+       
        ;
 
 instIter : FOR_ PARA_ expreOP
@@ -266,8 +292,10 @@ expre : expreLogic
               if (sim.t == T_ERROR) yyerror("Objeto no declarado");
               else {
                      if ($3 == T_ERROR) $$ = T_ERROR;
-                     else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3 == T_ENTERO))))
-                            $$ = T_ERROR;//yyerror("Error de tipos en la asignación expre2");
+                     else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3 == T_ENTERO)))) {
+                            $$ = T_ERROR;
+                            yyerror("Error de tipos en la asignación expre2");
+                     }
                             else $$ = $3;
               }
        }
@@ -290,10 +318,12 @@ expre : expreLogic
                             else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
                      }
                      int tipoArray = dim.telem;
-                     if (tipoArray != T_ERROR) {
+                     if (tipoArray != T_ERROR && $3 != T_ERROR && $6 != T_ERROR) {
                             if (!(((tipoArray == T_ENTERO) && ($6 == T_ENTERO)) ||
-                                   ((tipoArray == T_LOGICO) && ($6 == T_LOGICO)))) $$ = T_ERROR;//yyerror("Error de tipos en la asignación expre3");
-                            else $$ = T_ARRAY;
+                                   ((tipoArray == T_LOGICO) && ($6 == T_LOGICO)))) {
+                                   $$ = T_ERROR;
+                                   yyerror("Error de tipos en la asignación expre3");
+                            } else $$ = T_ARRAY;
                      } else {
                             $$ = T_ERROR;
                      }
@@ -343,7 +373,7 @@ expreRel : expreAd { $$ = $1; }
                             yyerror("Error de tipos en la asignación Rel");
                             $$ = T_ERROR;
                      }
-                     else{$$ = $3;}
+                     else{$$ = T_LOGICO;}
               }
               else{$$ = T_ERROR;}
        }
@@ -359,7 +389,7 @@ expreAd : expreMul { $$ = $1; }
                             $$ = T_ERROR;
                      }
                      else{$$ = $3;}
-              }
+              } else $$ = T_ERROR;
        }
        ;
 
@@ -373,7 +403,7 @@ expreMul : expreUna { $$ = $1; }
                             $$ = T_ERROR;
                      }
                      else{$$ = $3;}
-              }
+              } else $$ = T_ERROR;
        }
        ;
 
@@ -416,8 +446,11 @@ expreSufi: const
               if(simb.t == T_ERROR){
                      yyerror("Variable no declarada");
                      $$ = T_ERROR;
-              }else{
+              }else if (simb.t != T_ARRAY){
                      $$ = simb.t;
+              } else {
+                     yyerror("Array no puede ser una expresión");
+                     $$ = T_ERROR;
               }
        }
        | ID_ CORA_ expre CORC_
@@ -439,15 +472,21 @@ expreSufi: const
        | ID_ PARA_ paramAct PARC_
        {
               SIMB simb = obtTdS($1);
+              INF inf = obtTdD(simb.ref);
               int ref1 = simb.ref;
               if (!cmpDom(ref1, $3)){
-                     yyerror("Argumentos no coincidentes.");
+                     yyerror("No concordancia de tipos entre parámetros formales y el paso por valor");
                      $$ = T_ERROR;
               }else if (simb.t != T_ERROR){
                      $$ = simb.t;
-              }else{
-                     yyerror("Funcion no declarada");
+              }else {
+                     yyerror("Función no declarada");
                      $$ = T_ERROR;
+              }
+              if (ref1 == -1 || simb.t == T_ARRAY) {
+                     yyerror("El identificador no es una función");
+                     $$ = T_ERROR;
+       
               }
        }
        ;
@@ -467,7 +506,7 @@ listParamAct : expre
               $$ = insTdD(-1, $1);
        }
        | expre COMA_ listParamAct
-       {
+       {      
               insTdD($3, $1);
               $$ = $3;
        }
