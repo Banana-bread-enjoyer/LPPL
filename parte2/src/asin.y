@@ -42,7 +42,8 @@ programa :
        }
        listDecla
        {
-              if($2==0){yyerror("Se debe declarar al menos la función main()");}
+              printf("n main: %d",$2);
+              if($2!=1){yyerror("Se debe declarar UNA función main()");}
               mostrarTdS();
        }
 
@@ -54,19 +55,16 @@ listDecla : decla
        }
        | listDecla decla
        {
-              int primero = $1;
-              int segundo = $2;
-              if (segundo != primero) {
-                     if (segundo == 1) $$ = segundo;
-                     else $$ = primero;
-              }
-              else $$ = $1;
+              
+              //int primero = $1;
+              //int segundo = $2;
+              $$ = $1 + $2;
        }
        ;
 
 decla  : declaVar
        {
-              $$ = $1;
+              $<cent>$ = 0;
        }   
        | declaFunc
        {
@@ -139,15 +137,16 @@ declaFunc : tipoSimp ID_
        {
               dvar = 0;
               if(!insTdS($2, FUNCION, $1, 0, 0, $5)) {
-                     yyerror("Identificador repetido");
+                     yyerror("Identificador repetido");       
               }
-              if ($5 == -1) {
-                     $<cent>$ = T_ERROR;
-              }
+              //if ($5 == -1) {
+              
+                     //$<cent>$ = T_ERROR;
+              //}
        }
        bloque
        {
-              printf("\n\n%d %d\n\n", $1, $8);
+              //printf("\n\n%d %d\n\n", $1, $8);
               if ($1 != $8) {
                      yyerror("Tipo de retorno incorrecto");
               }
@@ -238,8 +237,10 @@ instEntSal : READ_ PARA_ ID_ PARC_ PUNTC_
 
 instSelec : IF_ PARA_ expre 
        {
-              
-              if ($3 != T_LOGICO) {
+              if($3 == T_ERROR){
+                     $<cent>$ = T_ERROR;
+              }
+              else if ($3 != T_LOGICO) {
                      yyerror("La expresión de comprobación del 'if' ha de ser de tipo LÓGICO");
               }
        
@@ -291,12 +292,13 @@ expre : expreLogic
               SIMB sim = obtTdS($1);
               if (sim.t == T_ERROR) yyerror("Objeto no declarado");
               else {
+                     //mostrarTdS();
                      if ($3 == T_ERROR) $$ = T_ERROR;
                      else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3 == T_ENTERO)))) {
+                            //printf("\n simt : %d\n $3 : %d \n ", sim.t, $3);
                             $$ = T_ERROR;
                             yyerror("Error de tipos en la asignación expre2");
-                     }
-                            else $$ = $3;
+                     } else $$ = $3;
               }
        }
        | ID_ CORA_ expre CORC_ IGUAL_ expre
@@ -434,7 +436,7 @@ expreUna : expreSufi { $$ = $1; }
 
 expreSufi: const
        {
-              $$ = T_ENTERO;
+              $$ = $1;
        }
        | PARA_ expre PARC_
        {
@@ -449,8 +451,8 @@ expreSufi: const
               }else if (simb.t != T_ARRAY){
                      $$ = simb.t;
               } else {
-                     yyerror("Array no puede ser una expresión");
-                     $$ = T_ERROR;
+                     //yyerror("Array no puede ser una expresión");
+                     //$$ = T_ERROR;
               }
        }
        | ID_ CORA_ expre CORC_
@@ -472,7 +474,7 @@ expreSufi: const
        | ID_ PARA_ paramAct PARC_
        {
               SIMB simb = obtTdS($1);
-              INF inf = obtTdD(simb.ref);
+              //INF inf = obtTdD(simb.ref);
               int ref1 = simb.ref;
               if (!cmpDom(ref1, $3)){
                      yyerror("No concordancia de tipos entre parámetros formales y el paso por valor");

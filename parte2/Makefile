@@ -7,7 +7,7 @@ SRCDIR = src
 INCDIR = include
 LIBDIR = lib
 # Opciones de compilacion
-COPT = -Wall -fsanitize=address,undefined -g
+COPT = -Wall #-fsanitize=address,undefined -g
 CLIB = -lfl -ltds
 OBJS = ./alex.o  ./asin.o ./principal.o 
 #

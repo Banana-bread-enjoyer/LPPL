@@ -17,7 +17,8 @@ int Y (int A, bool B)
 int main ()                // Identificador de funcion repetido
 {
   int x; bool y;             
-  x = 14;  y = true;
+  x = 14;  
+  y = true;
   if (x) {                 // La expresion del `if' debe ser 'logico'
     x = X(x, y);           // En la asignacion a una variable simple
     x = Y(y, x);           // En el dominio de los parametros actuales
