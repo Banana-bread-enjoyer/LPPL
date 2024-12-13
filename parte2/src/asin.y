@@ -29,8 +29,8 @@
 %type<cent> listInt inst  instExpre instSelec instEntSal instIter
 %type<cent> listDecla declaVar declaFunc decla declaVarLocal bloque
 
-%type <cent> expreMul expreAd expreSufi expreUna expreLogic
-%type <cent> expre expreRel expreIgual expreOP
+%type<cent> expreMul expreAd expreSufi expreUna expreLogic
+%type<cent> expre expreRel expreIgual expreOP
 
 %%
 
@@ -42,25 +42,25 @@ programa :
          }
          listDecla
          {
-              if($2==0){yyerror("Se debe declarar al menos la función main()");}
-              mostrarTdS();
+              if($2==0){yyerror("Se debe declarar UNA función main()");}
+              //mostrarTdS();
          }
 
        ;
 
 listDecla : decla
        {
-              $$ = $1;
+              $<cent>$ = $1;
        }
        | listDecla decla
        {
               int primero = $1;
               int segundo = $2;
               if (segundo != primero) {
-                     if (segundo = 1) $$ = segundo;
+                     if (segundo == 1) $$ = segundo;
                      else $$ = primero;
               }
-              else $$ = $0;
+              else $<cent>$ = 0;
        }
        ;
 
@@ -78,6 +78,9 @@ declaVar : tipoSimp ID_ PUNTC_
        }
        | tipoSimp ID_ IGUAL_ const PUNTC_ 
        {
+              if ($1 != $4){
+                     yyerror("Error de tipos en la inicialización");
+              }
               if (!insTdS($2, VARIABLE, $1, niv, dvar, -1)) yyerror("Identificador repetido");
               else dvar += TALLA_TIPO_SIMPLE;
        }
@@ -122,11 +125,6 @@ declaFunc : tipoSimp ID_
        {      
               $<cent>$ = dvar;
               dvar = 0;
-              if(strcmp($2,"main") == 0){
-                     $$ = 1;
-              }else{
-                     $$ = 0;
-              }
               niv++;
               cargaContexto(niv);
        }
@@ -140,9 +138,14 @@ declaFunc : tipoSimp ID_
        bloque
        {
               dvar = $<cent>3;
-              mostrarTdS();
+              //mostrarTdS();
               descargaContexto(niv);
               niv--;
+              if(strcmp($2,"main") == 0){
+                     $<cent>$ = 1;
+              }else{
+                     $<cent>$ = 0;
+              }
        }
        ;
 
@@ -212,12 +215,16 @@ expre : expreLogic
               SIMB sim = obtTdS($1);
               if (sim.t == T_ERROR) yyerror("Objeto no declarado");
               if ($3 == T_ERROR) $$ = T_ERROR;
-              else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || (sim.t == T_ENTERO) && ($3 == T_ENTERO)))
-                     yyerror("Error de tipos en la asignación expre");
+              else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3 == T_ENTERO)))){
+                     //yyerror("Error de tipos en la asignación expre");
+                     $$ = T_ERROR;
+              }
+                     
        }
        | ID_ CORA_ expre CORC_ IGUAL_ expre
        {
-              DIM dim = obtTdA($1);
+              SIMB sim = obtTdS($1);
+              DIM dim = obtTdA(sim.ref);
               if (!($3 == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
               else {
                      int pos = $3;
@@ -225,8 +232,8 @@ expre : expreLogic
                      else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
               }
               int tipoArray = dim.telem;
-              if (!((tipoArray == T_ENTERO) && ($6 == T_ENTERO) ||
-                     (tipoArray == T_LOGICO) && ($6 == T_LOGICO))) yyerror("Error de tipos en la asignación expre");
+              if (!(((tipoArray == T_ENTERO) && ($6 == T_ENTERO)) ||
+                     ((tipoArray == T_LOGICO) && ($6 == T_LOGICO)))) yyerror("Error de tipos en la asignación expre");
        }
        ;
 
