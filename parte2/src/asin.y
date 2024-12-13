@@ -87,7 +87,7 @@ declaVar : tipoSimp ID_ PUNTC_
               if (!insTdS($2, VARIABLE, $1, niv, dvar, -1)) yyerror("Identificador repetido");
               else 
               {
-                     if($1 != $4) yyerror("Error de tipos en la asignación expre1");
+                     if($1 != $4) $$ = T_ERROR; //yyerror("Error de tipos en la asignación expre1");
                      else dvar += TALLA_TIPO_SIMPLE;
               }
        }
@@ -145,7 +145,7 @@ declaFunc : tipoSimp ID_
        bloque
        {
               dvar = $<cent>3;
-              //mostrarTdS();
+              mostrarTdS();
               descargaContexto(niv);
               niv--;
               if(strcmp($2,"main") == 0){
@@ -213,7 +213,7 @@ instEntSal : READ_ PARA_ ID_ PARC_ PUNTC_
        | PRINT_ PARA_ expre PARC_ PUNTC_
        {
               if ($3 != T_ENTERO) {
-                     yyerror("El argumento del 'read' debe ser 'entero'");
+                     yyerror("El argumento del 'print' debe ser 'entero'");
                      $$ = T_ERROR;
               }
        }
@@ -267,18 +267,22 @@ expre : expreLogic
               else {
                      if ($3 == T_ERROR) $$ = T_ERROR;
                      else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3 == T_ENTERO))))
-                            yyerror("Error de tipos en la asignación expre2");
+                            $$ = T_ERROR;//yyerror("Error de tipos en la asignación expre2");
                             else $$ = $3;
               }
        }
        | ID_ CORA_ expre CORC_ IGUAL_ expre
        {
               SIMB s = obtTdS($1);
-              DIM dim = obtTdA(s.ref);
-              int tipoArray = dim.telem;
-              if (tipoArray == T_ERROR) {
-                            yyerror("La variable debe ser de tipo 'array'");
+              //DIM dim = obtTdA(s.ref);
+              //int tipoArray = dim.telem;
+              if($3 != T_ENTERO){
+                     yyerror("La índice debe ser de tipo 'entero'");
+              }
+              else if (s.t != T_ARRAY) {
+                     yyerror("La variable debe ser de tipo 'array'");
               } else {
+                     DIM dim = obtTdA(s.ref);
                      if (!($3 == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
                      else {
                             int pos = $3;
@@ -288,7 +292,7 @@ expre : expreLogic
                      int tipoArray = dim.telem;
                      if (tipoArray != T_ERROR) {
                             if (!(((tipoArray == T_ENTERO) && ($6 == T_ENTERO)) ||
-                                   ((tipoArray == T_LOGICO) && ($6 == T_LOGICO)))) yyerror("Error de tipos en la asignación expre3");
+                                   ((tipoArray == T_LOGICO) && ($6 == T_LOGICO)))) $$ = T_ERROR;//yyerror("Error de tipos en la asignación expre3");
                             else $$ = T_ARRAY;
                      } else {
                             $$ = T_ERROR;
@@ -424,8 +428,13 @@ expreSufi: const
                      yyerror("Ha de ser tipo entero");
                      $$ = T_ERROR;
               }
-              DIM d = obtTdA(simb.ref);
-              $$ = d.telem;
+              if(simb.t == T_ARRAY){
+                     DIM d = obtTdA(simb.ref);
+                     $$ = d.telem;
+              }else {
+                     $$ = T_ERROR;
+              }
+              
        }
        | ID_ PARA_ paramAct PARC_
        {
