@@ -193,6 +193,9 @@ inst : BRAA_ listInt BRAC_
        ;
 
 instExpre : expre PUNTC_
+       {
+              $$ = $1;
+       }
        | PUNTC_
        ;
 
