@@ -207,6 +207,9 @@ instSelec : IF_ PARA_ expre PARC_ inst ELSE_ inst
        ;
 
 instIter : FOR_ PARA_ expreOP PUNTC_ expre PUNTC_ expreOP PARC_ inst
+       {
+
+       }
        ;
 
 expreOP : { $$ = T_VACIO; }
@@ -217,6 +220,9 @@ expreOP : { $$ = T_VACIO; }
        ;
 
 expre : expreLogic
+       {
+              $$ = $1;
+       }
        | ID_ IGUAL_ expre
        {
               SIMB sim = obtTdS($1);
@@ -227,7 +233,8 @@ expre : expreLogic
        }
        | ID_ CORA_ expre CORC_ IGUAL_ expre
        {
-              DIM dim = obtTdA($1);
+              SIMB s = obtTdS($1);
+              DIM dim = obtTdA(s.ref);
               if (!($3 == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
               else {
                      int pos = $3;
