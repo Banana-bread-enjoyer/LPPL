@@ -35,16 +35,16 @@
 %%
 
 programa : 
-         {
+       {
               dvar = 0;
               niv = 0; 
               cargaContexto(niv);
-         }
-         listDecla
-         {
-              if($2==0){yyerror("Se debe declarar UNA función main()");}
-              //mostrarTdS();
-         }
+       }
+       listDecla
+       {
+              if($2==0){yyerror("Se debe declarar al menos la función main()");}
+              mostrarTdS();
+       }
 
        ;
 
@@ -60,11 +60,14 @@ listDecla : decla
                      if (segundo == 1) $$ = segundo;
                      else $$ = primero;
               }
-              else $<cent>$ = 0;
+              else $$ = $1;
        }
        ;
 
-decla   : declaVar
+decla  : declaVar
+       {
+              $$ = $1;
+       }   
        | declaFunc
        {
               $$ = $1;
@@ -82,7 +85,11 @@ declaVar : tipoSimp ID_ PUNTC_
                      yyerror("Error de tipos en la inicialización");
               }
               if (!insTdS($2, VARIABLE, $1, niv, dvar, -1)) yyerror("Identificador repetido");
-              else dvar += TALLA_TIPO_SIMPLE;
+              else 
+              {
+                     if($1 != $4) yyerror("Error de tipos en la asignación expre1");
+                     else dvar += TALLA_TIPO_SIMPLE;
+              }
        }
        | tipoSimp ID_ CORA_ CTE_ CORC_ PUNTC_    
        {
@@ -189,51 +196,105 @@ inst : BRAA_ listInt BRAC_
        ;
 
 instExpre : expre PUNTC_
+       {
+              $$ = $1;
+       }
        | PUNTC_
        ;
 
-instEntSal : READ_ PARA_ ID_ PARC_ PUNTC_
+instEntSal : READ_ PARA_ ID_ PARC_ PUNTC_ 
+       {
+              SIMB s = obtTdS($3);
+              if (s.t != T_ENTERO) {
+                     yyerror("El argumento del 'read' debe ser 'entero'");
+                     $$ = T_ERROR;
+              }
+       }
        | PRINT_ PARA_ expre PARC_ PUNTC_
+       {
+              if ($3 != T_ENTERO) {
+                     yyerror("El argumento del 'read' debe ser 'entero'");
+                     $$ = T_ERROR;
+              }
+       }
        ;
 
 instSelec : IF_ PARA_ expre PARC_ inst ELSE_ inst
        ;
 
-instIter : FOR_ PARA_ expreOP PUNTC_ expre PUNTC_ expreOP PARC_ inst
+instIter : FOR_ PARA_ expreOP
+       {
+              if (!($3 == T_ERROR || $3 == T_ENTERO || $3 == T_VACIO || $3 == T_LOGICO)) {
+                     yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
+                     $<cent>$ = T_ERROR;
+              }
+       }
+       PUNTC_ expre 
+       {
+              if (!($6 == T_LOGICO)) {
+                     yyerror("La segunda expresión del for ha de ser de tipo LÓGICA");
+                     $<cent>$ = T_ERROR;
+              }
+       }
+       PUNTC_ expreOP PARC_ inst
+       {
+              if (!($9 == T_ERROR || $9 == T_ENTERO || $9 == T_VACIO || $9 == T_LOGICO)) {
+                     yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
+                     $<cent>$ = T_ERROR;
+              }
+       }
        ;
 
 expreOP : { $$ = T_VACIO; }
        | expre 
-       {
+       {      
               $$ = $1;
+              if (!($1 == T_ENTERO || $1 == T_LOGICO)) {
+                     yyerror("La expreOP del for ha de ser de tipo simple");
+                     $$ = T_ERROR;
+              }
        }
        ;
 
 expre : expreLogic
+       {
+              $$ = $1;
+       }
        | ID_ IGUAL_ expre
        {
               SIMB sim = obtTdS($1);
               if (sim.t == T_ERROR) yyerror("Objeto no declarado");
-              if ($3 == T_ERROR) $$ = T_ERROR;
-              else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3 == T_ENTERO)))){
-                     //yyerror("Error de tipos en la asignación expre");
-                     $$ = T_ERROR;
+              else {
+                     if ($3 == T_ERROR) $$ = T_ERROR;
+                     else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || (sim.t == T_ENTERO) && ($3 == T_ENTERO)))
+                            yyerror("Error de tipos en la asignación expre2");
+                            else $$ = $3;
               }
-                     
        }
        | ID_ CORA_ expre CORC_ IGUAL_ expre
        {
-              SIMB sim = obtTdS($1);
-              DIM dim = obtTdA(sim.ref);
-              if (!($3 == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
-              else {
-                     int pos = $3;
-                     if (pos < 0) yyerror("La posición de un array debe ser positiva");
-                     else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
-              }
+              SIMB s = obtTdS($1);
+              DIM dim = obtTdA(s.ref);
               int tipoArray = dim.telem;
-              if (!(((tipoArray == T_ENTERO) && ($6 == T_ENTERO)) ||
-                     ((tipoArray == T_LOGICO) && ($6 == T_LOGICO)))) yyerror("Error de tipos en la asignación expre");
+              if (tipoArray == T_ERROR) {
+                            yyerror("La variable debe ser de tipo 'array'");
+              } else {
+                     if (!($3 == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
+                     else {
+                            int pos = $3;
+                            if (pos < 0) yyerror("La posición de un array debe ser positiva");
+                            else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
+                     }
+                     int tipoArray = dim.telem;
+                     if (tipoArray != T_ERROR) {
+                            if (!((tipoArray == T_ENTERO) && ($6 == T_ENTERO) ||
+                                   (tipoArray == T_LOGICO) && ($6 == T_LOGICO))) yyerror("Error de tipos en la asignación expre3");
+                            else $$ = T_ARRAY;
+                     } else {
+                            $$ = T_ERROR;
+                     }
+              }
+
        }
        ;
 
@@ -242,9 +303,15 @@ expreLogic : expreIgual { $$ = $1; }
        {
               if($1 != T_ERROR && $3 != T_ERROR)
               {
-                     if($1 != T_LOGICO || $3 != T_LOGICO) yyerror("Error de tipos en la asignación Logic");
+                     if($1 != T_LOGICO || $3 != T_LOGICO) {
+                            yyerror("Error de tipos en la asignación Logic");
+                            $$ = T_ERROR;
+                     }
+                     else $$ = T_LOGICO;
               }
-              else{yyerror("Objeto no declarado");}
+              else{
+                     $$ = T_ERROR;
+              }
        }
        ;
 
@@ -253,10 +320,13 @@ expreIgual : expreRel { $$ = $1; }
        {
               if($1 != T_ERROR && $3 != T_ERROR)
               {
-                     if($1 != $3) yyerror("Error de tipos en la asignación Igual");
+                     if($1 != $3) {
+                            yyerror("Error de tipos en la asignación Igual");
+                            $$ = T_ERROR;
+                     }
                      else{$$ = $3;}
               }
-              else{yyerror("Objeto no declarado");}
+              else{$$ = T_ERROR;}
        }
        ;
 
@@ -265,10 +335,13 @@ expreRel : expreAd { $$ = $1; }
        {
               if($1 != T_ERROR && $3 != T_ERROR)
               {
-                     if($1 != T_ENTERO || $3 != T_ENTERO) yyerror("Error de tipos en la asignación Rel");
+                     if($1 != T_ENTERO || $3 != T_ENTERO) {
+                            yyerror("Error de tipos en la asignación Rel");
+                            $$ = T_ERROR;
+                     }
                      else{$$ = $3;}
               }
-              else{yyerror("Objeto no declarado");}
+              else{$$ = T_ERROR;}
        }
        ; 
 
@@ -277,7 +350,10 @@ expreAd : expreMul { $$ = $1; }
        {
               if($1 != T_ERROR && $3 != T_ERROR)
               {
-                     if($1 != T_ENTERO || $3 != T_ENTERO) yyerror("Error de tipos en la asignación Ad");
+                     if($1 != T_ENTERO || $3 != T_ENTERO) {
+                            yyerror("Error de tipos en la asignación Ad");
+                            $$ = T_ERROR;
+                     }
                      else{$$ = $3;}
               }
        }
@@ -288,7 +364,10 @@ expreMul : expreUna { $$ = $1; }
        {
               if($1 != T_ERROR && $3 != T_ERROR)
               {
-                     if($1 != T_ENTERO || $3 != T_ENTERO) yyerror("Error de tipos en la asignación Mul");
+                     if($1 != T_ENTERO || $3 != T_ENTERO) {
+                            yyerror("Error de tipos en la asignación Mul");
+                            $$ = T_ERROR;
+                     }
                      else{$$ = $3;}
               }
        }
