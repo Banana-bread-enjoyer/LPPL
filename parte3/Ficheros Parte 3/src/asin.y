@@ -10,7 +10,8 @@
 
 %union{ 
     char* ident; 
-    int cent; 
+    int cent;
+    Exp exp;
 }
 
 %token PARA_ PARC_ MAS_ MENOS_ POR_ DIV_
@@ -28,8 +29,8 @@
 %type<cent> listInt inst  instExpre instSelec instEntSal instIter
 %type<cent> listDecla declaVar declaFunc decla declaVarLocal bloque
 
-%type<cent> expreMul expreAd expreSufi expreUna expreLogic
-%type<cent> expre expreRel expreIgual expreOP
+%type<exp> expreMul expreAd expreSufi expreUna expreLogic
+%type<exp> expre expreRel expreIgual expreOP
 
 %%
 
@@ -103,15 +104,15 @@ declaVar : tipoSimp ID_ PUNTC_
 
 const : CTE_ 
        {
-              $$.tipo = T_ENTERO; $$.pos = $1;
+              $$.t = T_ENTERO; $$.d = $1;
        }
        | TRUE_
        {
-              $$.tipo = T_LOGICO; $$.pos = 1;
+              $$.t = T_LOGICO; $$.d = 1;
        }
        | FALSE_ 
        {
-              $$.tipo = T_LOGICO; $$.pos = 0;
+              $$.t = T_LOGICO; $$.d = 0;
        }
        ;
 
@@ -271,13 +272,13 @@ instIter : FOR_ PARA_ expreOP
        }
        ;
 
-expreOP : { $$ = T_VACIO; }
+expreOP : { $$.t = T_VACIO; }
        | expre 
        {      
               $$ = $1;
               if (!($1 == T_ENTERO || $1 == T_LOGICO)) {
                      yyerror("La expreOP del for ha de ser de tipo simple");
-                     $$ = T_ERROR;
+                     $$.t = T_ERROR;
               }
        }
        ;
@@ -289,16 +290,20 @@ expre : expreLogic
        | ID_ IGUAL_ expre
        {
               SIMB sim = obtTdS($1);
-              if (sim.t == T_ERROR) yyerror("Objeto no declarado");
-              else {
+              $$.t = T_ERROR
+              if($3.t != T_ERROR){
+                     if (sim.t == T_ERROR) yyerror("Objeto no declarado");
+                     else if (sim.t == T_ARRAY){
+                            yyerror("El id en la asignacion no puede ser un array");
+                     }
                      //mostrarTdS();
-                     if ($3 == T_ERROR) $$ = T_ERROR;
                      else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3 == T_ENTERO)))) {
                             //printf("\n simt : %d\n $3 : %d \n ", sim.t, $3);
-                            $$ = T_ERROR;
                             yyerror("Error de tipos en la asignación expre2");
-                     } else $$ = $3;
+                     } else $$.t = $3.t;
               }
+              $$.d = creaVarTemp();
+              emite(EASIG, crArgPos(niv, $3.d), crArgNul(), crArgPos(sim.n, sim.d));       
        }
        | ID_ CORA_ expre CORC_ IGUAL_ expre
        {
@@ -336,16 +341,24 @@ expre : expreLogic
 expreLogic : expreIgual { $$ = $1; }
        | expreLogic opLogic expreIgual
        {
-              if($1 != T_ERROR && $3 != T_ERROR)
+              $$.t = T_ERROR;
+              if($1.t != T_ERROR && $3.t != T_ERROR)
               {
-                     if($1 != T_LOGICO || $3 != T_LOGICO) {
+                     if($1.t != T_LOGICO || $3.t != T_LOGICO) {
                             yyerror("Error de tipos en la asignación Logic");
-                            $$ = T_ERROR;
-                     }
-                     else $$ = T_LOGICO;
+                     } else if ($1.t == T_ARRAY) {
+                            yyerror("opLogico no sirve para arrays")
+                     }else{
+                            $$.t = T_LOGICO;
+                     } 
               }
-              else{
-                     $$ = T_ERROR;
+              $$.pos = creaVarTemp();
+              if ($2 == EMULT) {
+                emite(EMULT, crArgPos(niv, $1.pos), crArgPos(niv, $3.pos), crArgPos(niv, $$.pos));
+              } else {
+                emite(ESUM, crArgPos(niv, $1.pos), crArgPos(niv, $3.pos), crArgPos(niv, $$.pos));
+                emite(EMENEQ, crArgPos(niv, $$.pos), crArgEnt(1), crArgEtq(si+2));
+                emite(EASIG, crArgEnt(1), crArgNul(), crArgPos(niv, $$.pos));
               }
        }
        ;
@@ -353,82 +366,103 @@ expreLogic : expreIgual { $$ = $1; }
 expreIgual : expreRel { $$ = $1; }
        | expreIgual opIgual expreRel
        {
-              if($1 != T_ERROR && $3 != T_ERROR)
+              $$.t = T_ERROR;
+              if($1.t != T_ERROR && $3.t != T_ERROR)
               {
-                     if($1 != $3) {
+                     if($1.t != $3.t) {
                             yyerror("Error de tipos en la asignación Igual");
-                            $$ = T_ERROR;
-                     }
-                     else{$$ = $3;}
+                     } else if ($1.t == T_ARRAY) {
+                            yyerror("opIgual no sirve para arrays")
+                     }else{
+                            $$.t = T_LOGICO;
+                     }      
               }
-              else{$$ = T_ERROR;}
+              $$.d = creaVarTemp();
+              emite(EASIG, crArgEnt(1), crArgNul(), crArgPos(niv, $$.d));
+              emite($2, crArgPos(niv, $1.d), crArgPos(niv, $3.d), crArgEtq(si+2));
+              emite(EASIG, crArgEnt(0), crArgNul(), crArgPos(niv, $$.d));
        }
        ;
 
 expreRel : expreAd { $$ = $1; }
        | expreRel opRel expreAd
        {
-              if($1 != T_ERROR && $3 != T_ERROR)
+              $$.t = T_ERROR;
+              if($1.t != T_ERROR && $3.t != T_ERROR)
               {
-                     if($1 != T_ENTERO || $3 != T_ENTERO) {
-                            yyerror("Error de tipos en la asignación Rel");
-                            $$ = T_ERROR;
-                     }
-                     else{$$ = T_LOGICO;}
+                     if ($1.t != $3.t) {
+                            yyerror(E_TYPE_MISMATCH);
+                     } else if ($1.t == T_LOGICO) {
+                            yyerror("opRel no acepta t_logicos");
+                     } else {
+                            $$.t = T_LOGICO;
+                }  
               }
-              else{$$ = T_ERROR;}
+              $$.d = creaVarTemp();
+              emite(EASIG, crArgEnt(1), crArgNul(), crArgPos(niv, $$.d));
+              emite($2, crArgPos(niv, $1.d), crArgPos(niv, $3.d), crArgEtq(si+2));
+              emite(EASIG, crArgEnt(0), crArgNul(), crArgPos(niv, $$.d));
        }
        ; 
 
 expreAd : expreMul { $$ = $1; }
        | expreAd opAd expreMul 
        {
-              if($1 != T_ERROR && $3 != T_ERROR)
+              $$.t = T_ERROR
+              if($1.t != T_ERROR && $3.t != T_ERROR)
               {
-                     if($1 != T_ENTERO || $3 != T_ENTERO) {
+                     if($1.t != T_ENTERO || $3.t != T_ENTERO) {
                             yyerror("Error de tipos en la asignación Ad");
-                            $$ = T_ERROR;
                      }
-                     else{$$ = $3;}
-              } else $$ = T_ERROR;
+                     else{$$.t = T_ENTERO;}
+              }
+              $$.d = creaVarTemp();
+              /***************** Expresi´on a partir de un operador aritm´etico */
+              emite($2, crArgPos(niv, $1.d), crArgPos(niv, $3.d), crArgPos(niv, $$.d));    
        }
        ;
 
 expreMul : expreUna { $$ = $1; }
        | expreMul opMul expreUna
        {
-              if($1 != T_ERROR && $3 != T_ERROR)
+              $$.t = T_ERROR
+              if($1.t != T_ERROR && $3.t != T_ERROR)
               {
-                     if($1 != T_ENTERO || $3 != T_ENTERO) {
+                     if($1.t != T_ENTERO || $3.t != T_ENTERO) {
                             yyerror("Error de tipos en la asignación Mul");
-                            $$ = T_ERROR;
                      }
-                     else{$$ = $3;}
-              } else $$ = T_ERROR;
+                     else{$$.t = T_ENTERO;}
+              }
+              $$.d = creaVarTemp();
+              /***************** Expresi´on a partir de un operador aritm´etico */
+              emite($2, crArgPos(niv, $1.d), crArgPos(niv, $3.d), crArgPos(niv, $$.d));
        }
        ;
 
 expreUna : expreSufi { $$ = $1; }
        | opUna expreUna
        {
+              $$.t = T_ERROR;
               if($2 != T_ERROR){
                      if($2 == T_ENTERO){
-                            if($1 == NOT){
+                            if($1 == ESIG){
                                    yyerror("Operacion ! no es correcta para enteros");
-                                   $$ = T_ERROR;
                             } else{
-                                   $$ = T_ENTERO;
+                                   $$.t = T_ENTERO;
                             }
                      }else if ($2 == T_LOGICO){
-                            if($1 == NOT){
-                                   $$ = T_LOGICO;
+                            if($1 == ESIG){
+                                   $$.t = T_LOGICO;
                             }else{
-                                   yyerror("Operacion + / - no son correctas para booleanos");                                  
-                                   $$ = T_ERROR;
+                                   yyerror("Operacion + / - no son correctas para booleanos");
                             }
                      }
-              }else{
-                     $$ = T_ERROR;
+              }
+              $$.d = creaVarTemp();
+              if ($1 == ESIG) {
+                     emite(EDIF, crArgEnt(1), crArgPos(niv, $2.d), crArgPos(niv, $$.d));    
+              } else {
+                     emite($1, crArgEnt(0), crArgPos(niv, $2.d), crArgPos(niv, $$.d));
               }
        }
        ;
@@ -436,6 +470,7 @@ expreUna : expreSufi { $$ = $1; }
 expreSufi: const
        {
               $$ = $1;
+              emite(EASIG, crArgEnt($1.d), crArgNul(), crArgPos(niv, $$.d));
        }
        | PARA_ expre PARC_
        {
@@ -444,51 +479,51 @@ expreSufi: const
        | ID_
        {
               SIMB simb = obtTdS($1);
+              $$.t = T_ERROR;
               if(simb.t == T_ERROR){
                      yyerror("Variable no declarada");
-                     $$ = T_ERROR;
               }else if (simb.t != T_ARRAY){
-                     $$ = simb.t;
-              } else {
-                     //yyerror("Array no puede ser una expresión");
-                     //$$ = T_ERROR;
+                     $$.t = simb.t;
               }
+              $$.d = creaVarTemp();
+              emite(EASIG, crArgPos(simb.n, simb.d), crArgNul(), crArgPos(niv, $$.d)); 
        }
        | ID_ CORA_ expre CORC_
        {
               SIMB simb = obtTdS($1);
-
+              $$.t = T_ERROR;
+              
               if($3 != T_ENTERO){
                      yyerror("Ha de ser tipo entero");
-                     $$ = T_ERROR;
               }
               if(simb.t == T_ARRAY){
                      DIM d = obtTdA(simb.ref);
-                     $$ = d.telem;
+                     $$.t = d.telem;
               }else {
-                     $$ = T_ERROR;
+                     yyerror("Identificador ha de ser tipo array");
               }
+              $$.d = creaVarTemp();
+              emite(EAV, crArgPos(sim.n, sim.d), crArgPos(niv, $3.d), crArgPos(niv, $$.d));
               
        }
        | ID_ PARA_ paramAct PARC_
        {
               SIMB simb = obtTdS($1);
-              //INF inf = obtTdD(simb.ref);
-              int ref1 = simb.ref;
-              if (!cmpDom(ref1, $3)){
-                     yyerror("No concordancia de tipos entre parámetros formales y el paso por valor");
-                     $$ = T_ERROR;
-              }else if (simb.t != T_ERROR){
-                     $$ = simb.t;
-              }else {
-                     yyerror("Función no declarada");
-                     $$ = T_ERROR;
-              }
-              if (ref1 == -1 || simb.t == T_ARRAY) {
-                     yyerror("El identificador no es una función");
-                     $$ = T_ERROR;
-       
-              }
+              INF inf = obtTdD(simb.ref);
+              $$.t = T_ERROR;
+              if (sim.t == T_ERROR){ yyerror(""); }
+              else if (inf.tipo == T_ERROR){ yyerror(E_VAR_WITH_CALL); }
+              else {
+                     if (!cmpDom(sim.ref, $4)) { yyerror(E_TYPE_MISMATCH); }
+                     else 
+                     { 
+                            $$.t = inf.tipo; 
+                            emite(CALL,crArgNul(),crArgNul(),crArgEtq(sim.d));
+                            emite(DECTOP,crArgNul(),crArgNul(),crArgEnt(inf.tsp));
+                            $$.d = creaVarTemp();
+                            emite(EPOP,crArgNul(),crArgNul(),crArgPos(niv, $$.d));
+                     }
+              } 
        }
        ;
 
@@ -504,12 +539,16 @@ paramAct :
 
 listParamAct : expre 
        {
-              $$ = insTdD(-1, $1);
+              $$ = insTdD(-1, $1.t);
+              emite(EPUSH, crgArgNul(), crgArgNul(), crArgPos(niv, $1.d))
        }
-       | expre COMA_ listParamAct
+       | expre
+       {
+              emite(EPUSH,crArgNul(),crArgNul(),crArgPos(niv, $1.d));
+       }
+       COMA_ listParamAct
        {      
-              insTdD($3, $1);
-              $$ = $3;
+              $$ = insTdD($4, $1.t);
        }
        ;
 
