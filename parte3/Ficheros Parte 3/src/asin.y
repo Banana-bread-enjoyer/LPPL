@@ -38,6 +38,7 @@ programa :
        {
               dvar = 0;
               niv = 0; 
+              si = 0;
               cargaContexto(niv);
        }
        listDecla
@@ -352,13 +353,13 @@ expreLogic : expreIgual { $$ = $1; }
                             $$.t = T_LOGICO;
                      } 
               }
-              $$.pos = creaVarTemp();
+              $$.d = creaVarTemp();
               if ($2 == EMULT) {
-                emite(EMULT, crArgPos(niv, $1.pos), crArgPos(niv, $3.pos), crArgPos(niv, $$.pos));
+                emite(EMULT, crArgPos(niv, $1.d), crArgPos(niv, $3.d), crArgPos(niv, $$.d));
               } else {
-                emite(ESUM, crArgPos(niv, $1.pos), crArgPos(niv, $3.pos), crArgPos(niv, $$.pos));
-                emite(EMENEQ, crArgPos(niv, $$.pos), crArgEnt(1), crArgEtq(si+2));
-                emite(EASIG, crArgEnt(1), crArgNul(), crArgPos(niv, $$.pos));
+                emite(ESUM, crArgPos(niv, $1.d), crArgPos(niv, $3.d), crArgPos(niv, $$.d));
+                emite(EMENEQ, crArgPos(niv, $$.d), crArgEnt(1), crArgEtq(si+2));
+                emite(EASIG, crArgEnt(1), crArgNul(), crArgPos(niv, $$.d));
               }
        }
        ;
@@ -511,10 +512,10 @@ expreSufi: const
               SIMB simb = obtTdS($1);
               INF inf = obtTdD(simb.ref);
               $$.t = T_ERROR;
-              if (sim.t == T_ERROR){ yyerror(""); }
-              else if (inf.tipo == T_ERROR){ yyerror(E_VAR_WITH_CALL); }
+              if (sim.t == T_ERROR){ yyerror("El símbolo no debe ser error"); }
+              else if (inf.tipo == T_ERROR){ yyerror("La referencia no debe ser error"); }
               else {
-                     if (!cmpDom(sim.ref, $4)) { yyerror(E_TYPE_MISMATCH); }
+                     if (!cmpDom(sim.ref, $3)) { yyerror("Los dominios deben coincidir"); }
                      else 
                      { 
                             $$.t = inf.tipo; 
