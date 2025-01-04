@@ -4,9 +4,11 @@
 %{
 #include <stdio.h>
 #include <string.h>
-#include "header.h"
-#include "libtds.h"
+#include <header.h>
+#include <libtds.h>
+#include <libgci.h>
 %}
+
 
 %union{ 
     char* ident; 
@@ -46,6 +48,7 @@ programa :
               printf("n main: %d",$2);
               if($2!=1){yyerror("Se debe declarar UNA función main()");}
               mostrarTdS();
+              volcarCodigo();
        }
 
        ;
@@ -190,10 +193,34 @@ listParamForm: tipoSimp ID_
        }
        ;
 
-bloque : BRAA_ declaVarLocal listInt RETURN_ expre PUNTC_ BRAC_
+bloque : 
        {
-              
-              $$ = $5;
+              emite(PUSHFP, crArgNul(), crArgNul(), crArgNul());
+              emite(FPTOP, crArgNul(), crArgNul(), crArgNul());
+              $<cent>$ = creaLans(si);
+              emite(INCTOP, crArgNul(), crArgNul(), crArgEnt(-1));
+        } 
+       BRAA_ declaVarLocal listInt RETURN_ expre PUNTC_ BRAC_
+       {
+              INF inf = obtTdD(-1);
+              int dir_return = TALLA_SEGENLACES + inf.tsp + TALLA_TIPO_SIMPLE;
+              emite(EASIG, crArgPos(niv, $6.d), crArgNul(), crArgPos(niv, -dir_return));
+              emite(TOPFP, crArgNul(), crArgNul(), crArgNul());
+              emite(FPPOP, crArgNul(), crArgNul(), crArgNul());
+              if (inf.tipo != T_ERROR)
+              {
+                    if (inf.tipo != $6.t){ yyerror(E_TYPE_RETURN_NS); }
+              }
+
+            if (strcmp(inf.nom, "main")== 0)
+              { 
+                emite(FIN, crArgNul(), crArgNul(), crArgNul());
+              } 
+            else 
+              {
+                emite(RET, crArgNul(), crArgNul(), crArgNul());
+              } 
+              $<cent>$ = $6;
        }
        ;
 
@@ -222,21 +249,29 @@ instExpre : expre PUNTC_
 instEntSal : READ_ PARA_ ID_ PARC_ PUNTC_ 
        {
               SIMB s = obtTdS($3);
-              if (s.t != T_ENTERO) {
+              if (s.t == T_ERROR){
+                     $$ = T_ERROR;
+              }
+              else if (s.t != T_ENTERO) {
                      yyerror("El argumento del 'read' debe ser 'entero'");
                      $$ = T_ERROR;
               }
+              emite(EREAD, crArgNul(), crArgNul(), crArgPos(sim.n, sim.d));
        }
        | PRINT_ PARA_ expre PARC_ PUNTC_
        {
-              if ($3 != T_ENTERO) {
-                     yyerror("El argumento del 'print' debe ser 'entero'");
+              if ($3.t == T_ERROR){
                      $$ = T_ERROR;
               }
+              if ($3.t != T_ENTERO) {
+                     yyerror("El argumento del 'print' debe ser 'entero'");
+                     $$.t = T_ERROR;
+              }
+              emite(EWRITE, crArgNul(), crArgNul(), crArgPos(niv, $3.d));
        }
        ;
 
-instSelec : IF_ PARA_ expre 
+instSelec : IF_ PARA_ expre PARC_
        {
               if($3 == T_ERROR){
                      $<cent>$ = T_ERROR;
@@ -244,32 +279,54 @@ instSelec : IF_ PARA_ expre
               else if ($3 != T_LOGICO) {
                      yyerror("La expresión de comprobación del 'if' ha de ser de tipo LÓGICO");
               }
+              $<cent>$ = creaLans(si);
+              emite(EIGUAL, crArgPos(niv, $3.d), crArgEnt(0), crArgEtq(-1)); 
        
        }
-       PARC_ inst ELSE_ inst
+       inst 
+       {
+              $<cent>$ = creaLans(si);
+              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
+              completaLans($<cent>5, crArgEtq(si));
+       }
+       ELSE_ inst
+       {
+              completaLans($<cent>7, crArgEnt(si));
+       }
        
        ;
 
-instIter : FOR_ PARA_ expreOP
+instIter : FOR_ PARA_ expreOP PUNTC_
        {
               if (!($3 == T_ERROR || $3 == T_ENTERO || $3 == T_VACIO || $3 == T_LOGICO)) {
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
                      $<cent>$ = T_ERROR;
               }
+               $<cent>$ = si;
        }
-       PUNTC_ expre 
+       expre PUNTC_
        {
               if (!($6 == T_LOGICO)) {
                      yyerror("La segunda expresión del for ha de ser de tipo LÓGICA");
                      $<cent>$ = T_ERROR;
               }
+              int igual = creaLans(si); emite(EIGUAL, crArgPos(niv, $6.d), crArgEnt(1), crArgEtq(-1));
+              int distinto = creaLans(si); emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
+              int si_ant = si;
        }
-       PUNTC_ expreOP PARC_ inst
+       expreOP PARC_ 
+       {
+              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>5));
+              completaLans(igual, crArgEnt(si));
+       }
+       inst
        {
               if (!($9 == T_ERROR || $9 == T_ENTERO || $9 == T_VACIO || $9 == T_LOGICO)) {
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
                      $<cent>$ = T_ERROR;
               }
+              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(si_ant));
+              completaLans(distinto, crArgEnt(si));
        }
        ;
 
