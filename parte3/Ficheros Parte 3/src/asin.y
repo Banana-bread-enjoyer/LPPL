@@ -375,7 +375,7 @@ expre : expreLogic
                             yyerror("Error de tipos en la asignación expre2");
                      } else $$.t = $3.t;
               }
-              $$.d = creaVarTemp();
+              $$.d = $3.d;
               emite(EASIG, crArgPos(niv, $3.d), crArgNul(), crArgPos(sim.n, sim.d));       
        }
        | ID_ CORA_ expre CORC_ IGUAL_ expre
@@ -407,7 +407,8 @@ expre : expreLogic
                             $$.t = T_ERROR;
                      }
               }
-
+              $$.d = $6.d;
+              emite(EVA, crArgPos(s.n, s.d), crArgPos(niv, $3.d), crArgPos(niv, $6.d));
        }
        ;
 
