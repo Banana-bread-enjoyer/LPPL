@@ -1607,7 +1607,7 @@ yyreduce:
               }
               (yyval.for_s).verdad = creaLans(si); emite(EIGUAL, crArgPos(niv, (yyvsp[-1].exp).d), crArgEnt(1), crArgEtq(-1));
               (yyval.for_s).falso = creaLans(si); emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
-              (yyval.for_s).si_ant = si;
+              (yyval.for_s).ant_si = si;
        }
 #line 1613 "asin.c"
     break;
@@ -1628,7 +1628,7 @@ yyreduce:
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
                      (yyval.cent) = T_ERROR;
               }
-              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq((yyvsp[-4].for_s).si_ant));
+              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq((yyvsp[-4].for_s).ant_si));
               completaLans((yyvsp[-4].for_s).falso, crArgEnt(si));
        }
 #line 1635 "asin.c"

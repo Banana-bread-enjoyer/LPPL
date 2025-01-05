@@ -14,7 +14,7 @@ typedef struct exp { /****** Estructura para las expresiones */
 typedef struct for_s { /****** Estructura para las expresiones */ 
     int verdad;
     int falso;
-    int si_ant;
+    int ant_si;
 } FORSTRUCT;
 
 typedef struct inicio{

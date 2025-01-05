@@ -244,8 +244,8 @@ listInt :
 
 inst : BRAA_ listInt BRAC_
        | instExpre
-       | instEntSal
-       | instSelec
+       | instEntSal 
+       | instSelec 
        | instIter
        ;
 
@@ -322,7 +322,7 @@ instIter : FOR_ PARA_ expreOP PUNTC_
               }
               $<for_s>$.verdad = creaLans(si); emite(EIGUAL, crArgPos(niv, $6.d), crArgEnt(1), crArgEtq(-1));
               $<for_s>$.falso = creaLans(si); emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
-              $<for_s>$.si_ant = si;
+              $<for_s>$.ant_si = si;
        }
        expreOP PARC_ 
        {
@@ -335,7 +335,7 @@ instIter : FOR_ PARA_ expreOP PUNTC_
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
                      $<cent>$ = T_ERROR;
               }
-              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<for_s>8.si_ant));
+              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<for_s>8.ant_si));
               completaLans($<for_s>8.falso, crArgEnt(si));
        }
        ;
