@@ -146,11 +146,12 @@ tipoSimp : INT_
 declaFunc : tipoSimp ID_ 
        {      
               $<cent>$ = dvar;
-              dvar = 0;
+              dvar = -TALLA_SEGENLACES;
               niv++;
               cargaContexto(niv);
        }
-       PARA_ paramForm PARC_ 
+       PARA_ 
+       paramForm PARC_ 
        {
               dvar = 0;
               if(!insTdS($2, FUNCION, $1, 0, si, $5)) {
@@ -584,7 +585,11 @@ expreSufi: const
               emite(EAV, crArgPos(simb.n, simb.d), crArgPos(niv, $3.d), crArgPos(niv, $$.d));
               
        }
-       | ID_ PARA_ paramAct PARC_
+       | ID_
+       {
+              emite(INCTOP, crArgNul(), crArgNul(), crArgEnt(1));
+       }
+       PARA_ paramAct PARC_
        {
               SIMB simb = obtTdS($1);
               INF inf = obtTdD(simb.ref);
@@ -592,7 +597,7 @@ expreSufi: const
               if (simb.t == T_ERROR){ yyerror("El símbolo no debe ser error"); }
               else if (inf.tipo == T_ERROR){ yyerror("La referencia no debe ser error"); }
               else {
-                     if (!cmpDom(simb.ref, $3)) { yyerror("Los dominios deben coincidir"); }
+                     if (!cmpDom(simb.ref, $4)) { yyerror("Los dominios deben coincidir"); }
                      else 
                      { 
                             $$.t = inf.tipo; 
