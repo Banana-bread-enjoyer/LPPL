@@ -392,9 +392,9 @@ expre : expreLogic
                      DIM dim = obtTdA(s.ref);
                      if (!($3.t == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
                      else {
-                            int pos = $3.d;
-                            if (pos < 0) yyerror("La posición de un array debe ser positiva");
-                            else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
+                            //int pos = $3.d;
+                            //if (pos < 0) yyerror("La posición de un array debe ser positiva");
+                            //else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
                      }
                      int tipoArray = dim.telem;
                      if (tipoArray != T_ERROR && $3.t != T_ERROR && $6.t != T_ERROR) {

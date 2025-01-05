@@ -1702,9 +1702,9 @@ yyreduce:
                      DIM dim = obtTdA(s.ref);
                      if (!((yyvsp[-3].exp).t == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
                      else {
-                            int pos = (yyvsp[-3].exp).d;
-                            if (pos < 0) yyerror("La posición de un array debe ser positiva");
-                            else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
+                            //int pos = $3.d;
+                            //if (pos < 0) yyerror("La posición de un array debe ser positiva");
+                            //else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
                      }
                      int tipoArray = dim.telem;
                      if (tipoArray != T_ERROR && (yyvsp[-3].exp).t != T_ERROR && (yyvsp[0].exp).t != T_ERROR) {
