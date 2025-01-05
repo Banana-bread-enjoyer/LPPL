@@ -13,7 +13,7 @@
 %union{ 
     char* ident; 
     int cent;
-    Exp exp;
+    EXP exp;
 }
 
 %token PARA_ PARC_ MAS_ MENOS_ POR_ DIV_
@@ -26,13 +26,13 @@
 %token<cent> CTE_ 
 %token<ident> ID_
 
-%type<cent> tipoSimp opUna opMul opAd opRel opIgual opLogic const
+%type<cent> tipoSimp opUna opMul opAd opRel opIgual opLogic 
 %type<cent> paramForm listParamForm  paramAct listParamAct
 %type<cent> listInt inst  instExpre instSelec instEntSal instIter
 %type<cent> listDecla declaVar declaFunc decla declaVarLocal bloque
 
 %type<exp> expreMul expreAd expreSufi expreUna expreLogic
-%type<exp> expre expreRel expreIgual expreOP
+%type<exp> expre expreRel expreIgual expreOP const
 
 %%
 
@@ -48,7 +48,7 @@ programa :
               printf("n main: %d",$2);
               if($2!=1){yyerror("Se debe declarar UNA función main()");}
               mostrarTdS();
-              volcarCodigo();
+              volcarCodigo("test");
        }
 
        ;
@@ -83,13 +83,13 @@ declaVar : tipoSimp ID_ PUNTC_
        }
        | tipoSimp ID_ IGUAL_ const PUNTC_ 
        {
-              if ($1 != $4){
+              if ($1 != $4.t){
                      yyerror("Error de tipos en la inicialización");
               }
               if (!insTdS($2, VARIABLE, $1, niv, dvar, -1)) yyerror("Identificador repetido");
               else 
               {
-                     if($1 != $4) $$ = T_ERROR; //yyerror("Error de tipos en la asignación expre1");
+                     if($1 != $4.t) $$ = T_ERROR; //yyerror("Error de tipos en la asignación expre1");
                      else dvar += TALLA_TIPO_SIMPLE;
               }
        }
@@ -209,7 +209,7 @@ bloque :
               emite(FPPOP, crArgNul(), crArgNul(), crArgNul());
               if (inf.tipo != T_ERROR)
               {
-                    if (inf.tipo != $6.t){ yyerror(E_TYPE_RETURN_NS); }
+                    if (inf.tipo != $6.t){ yyerror("Tiene que coincidir el tipo que se retorna"); }
               }
 
             if (strcmp(inf.nom, "main")== 0)
@@ -220,7 +220,7 @@ bloque :
               {
                 emite(RET, crArgNul(), crArgNul(), crArgNul());
               } 
-              $<cent>$ = $6;
+              $<cent>$ = $6.d;
        }
        ;
 
@@ -241,7 +241,7 @@ inst : BRAA_ listInt BRAC_
 
 instExpre : expre PUNTC_
        {
-              $$ = $1;
+              $$ = $1.t;
        }
        | PUNTC_
        ;
@@ -256,7 +256,7 @@ instEntSal : READ_ PARA_ ID_ PARC_ PUNTC_
                      yyerror("El argumento del 'read' debe ser 'entero'");
                      $$ = T_ERROR;
               }
-              emite(EREAD, crArgNul(), crArgNul(), crArgPos(sim.n, sim.d));
+              emite(EREAD, crArgNul(), crArgNul(), crArgPos(s.n, s.d));
        }
        | PRINT_ PARA_ expre PARC_ PUNTC_
        {
@@ -265,7 +265,7 @@ instEntSal : READ_ PARA_ ID_ PARC_ PUNTC_
               }
               if ($3.t != T_ENTERO) {
                      yyerror("El argumento del 'print' debe ser 'entero'");
-                     $$.t = T_ERROR;
+                     $$ = T_ERROR;
               }
               emite(EWRITE, crArgNul(), crArgNul(), crArgPos(niv, $3.d));
        }
@@ -273,10 +273,10 @@ instEntSal : READ_ PARA_ ID_ PARC_ PUNTC_
 
 instSelec : IF_ PARA_ expre PARC_
        {
-              if($3 == T_ERROR){
+              if($3.t == T_ERROR){
                      $<cent>$ = T_ERROR;
               }
-              else if ($3 != T_LOGICO) {
+              else if ($3.t != T_LOGICO) {
                      yyerror("La expresión de comprobación del 'if' ha de ser de tipo LÓGICO");
               }
               $<cent>$ = creaLans(si);
@@ -298,7 +298,7 @@ instSelec : IF_ PARA_ expre PARC_
 
 instIter : FOR_ PARA_ expreOP PUNTC_
        {
-              if (!($3 == T_ERROR || $3 == T_ENTERO || $3 == T_VACIO || $3 == T_LOGICO)) {
+              if (!($3.t == T_ERROR || $3.t == T_ENTERO || $3.t == T_VACIO || $3.t == T_LOGICO)) {
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
                      $<cent>$ = T_ERROR;
               }
@@ -306,7 +306,7 @@ instIter : FOR_ PARA_ expreOP PUNTC_
        }
        expre PUNTC_
        {
-              if (!($6 == T_LOGICO)) {
+              if (!($6.t == T_LOGICO)) {
                      yyerror("La segunda expresión del for ha de ser de tipo LÓGICA");
                      $<cent>$ = T_ERROR;
               }
@@ -321,7 +321,7 @@ instIter : FOR_ PARA_ expreOP PUNTC_
        }
        inst
        {
-              if (!($9 == T_ERROR || $9 == T_ENTERO || $9 == T_VACIO || $9 == T_LOGICO)) {
+              if (!($9.t == T_ERROR || $9.t == T_ENTERO || $9.t == T_VACIO || $9.t == T_LOGICO)) {
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
                      $<cent>$ = T_ERROR;
               }
@@ -334,7 +334,7 @@ expreOP : { $$.t = T_VACIO; }
        | expre 
        {      
               $$ = $1;
-              if (!($1 == T_ENTERO || $1 == T_LOGICO)) {
+              if (!($1.t == T_ENTERO || $1.t == T_LOGICO)) {
                      yyerror("La expreOP del for ha de ser de tipo simple");
                      $$.t = T_ERROR;
               }
@@ -348,14 +348,14 @@ expre : expreLogic
        | ID_ IGUAL_ expre
        {
               SIMB sim = obtTdS($1);
-              $$.t = T_ERROR
+              $$.t = T_ERROR;
               if($3.t != T_ERROR){
                      if (sim.t == T_ERROR) yyerror("Objeto no declarado");
                      else if (sim.t == T_ARRAY){
                             yyerror("El id en la asignacion no puede ser un array");
                      }
                      //mostrarTdS();
-                     else if (!(((sim.t == T_LOGICO) && ($3 == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3 == T_ENTERO)))) {
+                     else if (!(((sim.t == T_LOGICO) && ($3.t == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3.t == T_ENTERO)))) {
                             //printf("\n simt : %d\n $3 : %d \n ", sim.t, $3);
                             yyerror("Error de tipos en la asignación expre2");
                      } else $$.t = $3.t;
@@ -368,28 +368,28 @@ expre : expreLogic
               SIMB s = obtTdS($1);
               //DIM dim = obtTdA(s.ref);
               //int tipoArray = dim.telem;
-              if($3 != T_ENTERO){
+              if($3.t != T_ENTERO){
                      yyerror("La índice debe ser de tipo 'entero'");
               }
               else if (s.t != T_ARRAY) {
                      yyerror("La variable debe ser de tipo 'array'");
               } else {
                      DIM dim = obtTdA(s.ref);
-                     if (!($3 == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
+                     if (!($3.t == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
                      else {
-                            int pos = $3;
+                            int pos = $3.d;
                             if (pos < 0) yyerror("La posición de un array debe ser positiva");
                             else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
                      }
                      int tipoArray = dim.telem;
-                     if (tipoArray != T_ERROR && $3 != T_ERROR && $6 != T_ERROR) {
-                            if (!(((tipoArray == T_ENTERO) && ($6 == T_ENTERO)) ||
-                                   ((tipoArray == T_LOGICO) && ($6 == T_LOGICO)))) {
-                                   $$ = T_ERROR;
+                     if (tipoArray != T_ERROR && $3.t != T_ERROR && $6.t != T_ERROR) {
+                            if (!(((tipoArray == T_ENTERO) && ($6.t == T_ENTERO)) ||
+                                   ((tipoArray == T_LOGICO) && ($6.t == T_LOGICO)))) {
+                                   $$.t = T_ERROR;
                                    yyerror("Error de tipos en la asignación expre3");
-                            } else $$ = T_ARRAY;
+                            } else $$.t = T_ARRAY;
                      } else {
-                            $$ = T_ERROR;
+                            $$.t = T_ERROR;
                      }
               }
 
@@ -405,7 +405,7 @@ expreLogic : expreIgual { $$ = $1; }
                      if($1.t != T_LOGICO || $3.t != T_LOGICO) {
                             yyerror("Error de tipos en la asignación Logic");
                      } else if ($1.t == T_ARRAY) {
-                            yyerror("opLogico no sirve para arrays")
+                            yyerror("opLogico no sirve para arrays");
                      }else{
                             $$.t = T_LOGICO;
                      } 
@@ -430,7 +430,7 @@ expreIgual : expreRel { $$ = $1; }
                      if($1.t != $3.t) {
                             yyerror("Error de tipos en la asignación Igual");
                      } else if ($1.t == T_ARRAY) {
-                            yyerror("opIgual no sirve para arrays")
+                            yyerror("opIgual no sirve para arrays");
                      }else{
                             $$.t = T_LOGICO;
                      }      
@@ -449,7 +449,7 @@ expreRel : expreAd { $$ = $1; }
               if($1.t != T_ERROR && $3.t != T_ERROR)
               {
                      if ($1.t != $3.t) {
-                            yyerror(E_TYPE_MISMATCH);
+                            yyerror("No tienen el mismo tipo los operadores");
                      } else if ($1.t == T_LOGICO) {
                             yyerror("opRel no acepta t_logicos");
                      } else {
@@ -466,7 +466,7 @@ expreRel : expreAd { $$ = $1; }
 expreAd : expreMul { $$ = $1; }
        | expreAd opAd expreMul 
        {
-              $$.t = T_ERROR
+              $$.t = T_ERROR;
               if($1.t != T_ERROR && $3.t != T_ERROR)
               {
                      if($1.t != T_ENTERO || $3.t != T_ENTERO) {
@@ -483,7 +483,7 @@ expreAd : expreMul { $$ = $1; }
 expreMul : expreUna { $$ = $1; }
        | expreMul opMul expreUna
        {
-              $$.t = T_ERROR
+              $$.t = T_ERROR;
               if($1.t != T_ERROR && $3.t != T_ERROR)
               {
                      if($1.t != T_ENTERO || $3.t != T_ENTERO) {
@@ -501,14 +501,14 @@ expreUna : expreSufi { $$ = $1; }
        | opUna expreUna
        {
               $$.t = T_ERROR;
-              if($2 != T_ERROR){
-                     if($2 == T_ENTERO){
+              if($2.t != T_ERROR){
+                     if($2.t == T_ENTERO){
                             if($1 == ESIG){
                                    yyerror("Operacion ! no es correcta para enteros");
                             } else{
                                    $$.t = T_ENTERO;
                             }
-                     }else if ($2 == T_LOGICO){
+                     }else if ($2.t == T_LOGICO){
                             if($1 == ESIG){
                                    $$.t = T_LOGICO;
                             }else{
@@ -551,7 +551,7 @@ expreSufi: const
               SIMB simb = obtTdS($1);
               $$.t = T_ERROR;
               
-              if($3 != T_ENTERO){
+              if($3.t != T_ENTERO){
                      yyerror("Ha de ser tipo entero");
               }
               if(simb.t == T_ARRAY){
@@ -561,7 +561,7 @@ expreSufi: const
                      yyerror("Identificador ha de ser tipo array");
               }
               $$.d = creaVarTemp();
-              emite(EAV, crArgPos(sim.n, sim.d), crArgPos(niv, $3.d), crArgPos(niv, $$.d));
+              emite(EAV, crArgPos(simb.n, simb.d), crArgPos(niv, $3.d), crArgPos(niv, $$.d));
               
        }
        | ID_ PARA_ paramAct PARC_
@@ -598,7 +598,7 @@ paramAct :
 listParamAct : expre 
        {
               $$ = insTdD(-1, $1.t);
-              emite(EPUSH, crgArgNul(), crgArgNul(), crArgPos(niv, $1.d))
+              emite(EPUSH, crgArgNul(), crgArgNul(), crArgPos(niv, $1.d));
        }
        | expre
        {

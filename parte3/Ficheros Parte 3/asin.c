@@ -1267,7 +1267,7 @@ yyreduce:
               printf("n main: %d",(yyvsp[0].cent));
               if((yyvsp[0].cent)!=1){yyerror("Se debe declarar UNA función main()");}
               mostrarTdS();
-              volcarCodigo();
+              volcarCodigo("test");
        }
 #line 1273 "asin.c"
     break;
@@ -1319,13 +1319,13 @@ yyreduce:
   case 9: /* declaVar: tipoSimp ID_ IGUAL_ const PUNTC_  */
 #line 85 "src/asin.y"
        {
-              if ((yyvsp[-4].cent) != (yyvsp[-1].cent)){
+              if ((yyvsp[-4].cent) != (yyvsp[-1].exp).t){
                      yyerror("Error de tipos en la inicialización");
               }
               if (!insTdS((yyvsp[-3].ident), VARIABLE, (yyvsp[-4].cent), niv, dvar, -1)) yyerror("Identificador repetido");
               else 
               {
-                     if((yyvsp[-4].cent) != (yyvsp[-1].cent)) (yyval.cent) = T_ERROR; //yyerror("Error de tipos en la asignación expre1");
+                     if((yyvsp[-4].cent) != (yyvsp[-1].exp).t) (yyval.cent) = T_ERROR; //yyerror("Error de tipos en la asignación expre1");
                      else dvar += TALLA_TIPO_SIMPLE;
               }
        }
@@ -1350,7 +1350,7 @@ yyreduce:
   case 11: /* const: CTE_  */
 #line 110 "src/asin.y"
        {
-              (yyval.cent).t = T_ENTERO; (yyval.cent).d = (yyvsp[0].cent);
+              (yyval.exp).t = T_ENTERO; (yyval.exp).d = (yyvsp[0].cent);
        }
 #line 1356 "asin.c"
     break;
@@ -1358,7 +1358,7 @@ yyreduce:
   case 12: /* const: TRUE_  */
 #line 114 "src/asin.y"
        {
-              (yyval.cent).t = T_LOGICO; (yyval.cent).d = 1;
+              (yyval.exp).t = T_LOGICO; (yyval.exp).d = 1;
        }
 #line 1364 "asin.c"
     break;
@@ -1366,7 +1366,7 @@ yyreduce:
   case 13: /* const: FALSE_  */
 #line 118 "src/asin.y"
        {
-              (yyval.cent).t = T_LOGICO; (yyval.cent).d = 0;
+              (yyval.exp).t = T_LOGICO; (yyval.exp).d = 0;
        }
 #line 1372 "asin.c"
     break;
@@ -1493,7 +1493,7 @@ yyreduce:
               emite(FPPOP, crArgNul(), crArgNul(), crArgNul());
               if (inf.tipo != T_ERROR)
               {
-                    if (inf.tipo != (yyvsp[-2].exp).t){ yyerror(E_TYPE_RETURN_NS); }
+                    if (inf.tipo != (yyvsp[-2].exp).t){ yyerror("Tiene que coincidir el tipo que se retorna"); }
               }
 
             if (strcmp(inf.nom, "main")== 0)
@@ -1504,7 +1504,7 @@ yyreduce:
               {
                 emite(RET, crArgNul(), crArgNul(), crArgNul());
               } 
-              (yyval.cent) = (yyvsp[-2].exp);
+              (yyval.cent) = (yyvsp[-2].exp).d;
        }
 #line 1510 "asin.c"
     break;
@@ -1512,7 +1512,7 @@ yyreduce:
   case 34: /* instExpre: expre PUNTC_  */
 #line 243 "src/asin.y"
        {
-              (yyval.cent) = (yyvsp[-1].exp);
+              (yyval.cent) = (yyvsp[-1].exp).t;
        }
 #line 1518 "asin.c"
     break;
@@ -1528,7 +1528,7 @@ yyreduce:
                      yyerror("El argumento del 'read' debe ser 'entero'");
                      (yyval.cent) = T_ERROR;
               }
-              emite(EREAD, crArgNul(), crArgNul(), crArgPos(sim.n, sim.d));
+              emite(EREAD, crArgNul(), crArgNul(), crArgPos(s.n, s.d));
        }
 #line 1534 "asin.c"
     break;
@@ -1541,7 +1541,7 @@ yyreduce:
               }
               if ((yyvsp[-2].exp).t != T_ENTERO) {
                      yyerror("El argumento del 'print' debe ser 'entero'");
-                     (yyval.cent).t = T_ERROR;
+                     (yyval.cent) = T_ERROR;
               }
               emite(EWRITE, crArgNul(), crArgNul(), crArgPos(niv, (yyvsp[-2].exp).d));
        }
@@ -1551,10 +1551,10 @@ yyreduce:
   case 38: /* @5: %empty  */
 #line 275 "src/asin.y"
        {
-              if((yyvsp[-1].exp) == T_ERROR){
+              if((yyvsp[-1].exp).t == T_ERROR){
                      (yyval.cent) = T_ERROR;
               }
-              else if ((yyvsp[-1].exp) != T_LOGICO) {
+              else if ((yyvsp[-1].exp).t != T_LOGICO) {
                      yyerror("La expresión de comprobación del 'if' ha de ser de tipo LÓGICO");
               }
               (yyval.cent) = creaLans(si);
@@ -1585,7 +1585,7 @@ yyreduce:
   case 41: /* @7: %empty  */
 #line 300 "src/asin.y"
        {
-              if (!((yyvsp[-1].exp) == T_ERROR || (yyvsp[-1].exp) == T_ENTERO || (yyvsp[-1].exp) == T_VACIO || (yyvsp[-1].exp) == T_LOGICO)) {
+              if (!((yyvsp[-1].exp).t == T_ERROR || (yyvsp[-1].exp).t == T_ENTERO || (yyvsp[-1].exp).t == T_VACIO || (yyvsp[-1].exp).t == T_LOGICO)) {
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
                      (yyval.cent) = T_ERROR;
               }
@@ -1597,7 +1597,7 @@ yyreduce:
   case 42: /* @8: %empty  */
 #line 308 "src/asin.y"
        {
-              if (!((yyvsp[-1].exp) == T_LOGICO)) {
+              if (!((yyvsp[-1].exp).t == T_LOGICO)) {
                      yyerror("La segunda expresión del for ha de ser de tipo LÓGICA");
                      (yyval.cent) = T_ERROR;
               }
@@ -1620,7 +1620,7 @@ yyreduce:
   case 44: /* instIter: FOR_ PARA_ expreOP PUNTC_ @7 expre PUNTC_ @8 expreOP PARC_ $@9 inst  */
 #line 323 "src/asin.y"
        {
-              if (!((yyvsp[-3].exp) == T_ERROR || (yyvsp[-3].exp) == T_ENTERO || (yyvsp[-3].exp) == T_VACIO || (yyvsp[-3].exp) == T_LOGICO)) {
+              if (!((yyvsp[-3].exp).t == T_ERROR || (yyvsp[-3].exp).t == T_ENTERO || (yyvsp[-3].exp).t == T_VACIO || (yyvsp[-3].exp).t == T_LOGICO)) {
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
                      (yyval.cent) = T_ERROR;
               }
@@ -1640,7 +1640,7 @@ yyreduce:
 #line 335 "src/asin.y"
        {      
               (yyval.exp) = (yyvsp[0].exp);
-              if (!((yyvsp[0].exp) == T_ENTERO || (yyvsp[0].exp) == T_LOGICO)) {
+              if (!((yyvsp[0].exp).t == T_ENTERO || (yyvsp[0].exp).t == T_LOGICO)) {
                      yyerror("La expreOP del for ha de ser de tipo simple");
                      (yyval.exp).t = T_ERROR;
               }
@@ -1660,14 +1660,14 @@ yyreduce:
 #line 349 "src/asin.y"
        {
               SIMB sim = obtTdS((yyvsp[-2].ident));
-              (yyval.exp).t = T_ERROR
+              (yyval.exp).t = T_ERROR;
               if((yyvsp[0].exp).t != T_ERROR){
                      if (sim.t == T_ERROR) yyerror("Objeto no declarado");
                      else if (sim.t == T_ARRAY){
                             yyerror("El id en la asignacion no puede ser un array");
                      }
                      //mostrarTdS();
-                     else if (!(((sim.t == T_LOGICO) && ((yyvsp[0].exp) == T_LOGICO)) || ((sim.t == T_ENTERO) && ((yyvsp[0].exp) == T_ENTERO)))) {
+                     else if (!(((sim.t == T_LOGICO) && ((yyvsp[0].exp).t == T_LOGICO)) || ((sim.t == T_ENTERO) && ((yyvsp[0].exp).t == T_ENTERO)))) {
                             //printf("\n simt : %d\n $3 : %d \n ", sim.t, $3);
                             yyerror("Error de tipos en la asignación expre2");
                      } else (yyval.exp).t = (yyvsp[0].exp).t;
@@ -1684,28 +1684,28 @@ yyreduce:
               SIMB s = obtTdS((yyvsp[-5].ident));
               //DIM dim = obtTdA(s.ref);
               //int tipoArray = dim.telem;
-              if((yyvsp[-3].exp) != T_ENTERO){
+              if((yyvsp[-3].exp).t != T_ENTERO){
                      yyerror("La índice debe ser de tipo 'entero'");
               }
               else if (s.t != T_ARRAY) {
                      yyerror("La variable debe ser de tipo 'array'");
               } else {
                      DIM dim = obtTdA(s.ref);
-                     if (!((yyvsp[-3].exp) == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
+                     if (!((yyvsp[-3].exp).t == T_ENTERO)) yyerror("Posición de un array debe ser una expresión numérica");
                      else {
-                            int pos = (yyvsp[-3].exp);
+                            int pos = (yyvsp[-3].exp).d;
                             if (pos < 0) yyerror("La posición de un array debe ser positiva");
                             else if (pos >= dim.nelem) yyerror("La posición dada excede las dimensiones del array");
                      }
                      int tipoArray = dim.telem;
-                     if (tipoArray != T_ERROR && (yyvsp[-3].exp) != T_ERROR && (yyvsp[0].exp) != T_ERROR) {
-                            if (!(((tipoArray == T_ENTERO) && ((yyvsp[0].exp) == T_ENTERO)) ||
-                                   ((tipoArray == T_LOGICO) && ((yyvsp[0].exp) == T_LOGICO)))) {
-                                   (yyval.exp) = T_ERROR;
+                     if (tipoArray != T_ERROR && (yyvsp[-3].exp).t != T_ERROR && (yyvsp[0].exp).t != T_ERROR) {
+                            if (!(((tipoArray == T_ENTERO) && ((yyvsp[0].exp).t == T_ENTERO)) ||
+                                   ((tipoArray == T_LOGICO) && ((yyvsp[0].exp).t == T_LOGICO)))) {
+                                   (yyval.exp).t = T_ERROR;
                                    yyerror("Error de tipos en la asignación expre3");
-                            } else (yyval.exp) = T_ARRAY;
+                            } else (yyval.exp).t = T_ARRAY;
                      } else {
-                            (yyval.exp) = T_ERROR;
+                            (yyval.exp).t = T_ERROR;
                      }
               }
 
@@ -1728,7 +1728,7 @@ yyreduce:
                      if((yyvsp[-2].exp).t != T_LOGICO || (yyvsp[0].exp).t != T_LOGICO) {
                             yyerror("Error de tipos en la asignación Logic");
                      } else if ((yyvsp[-2].exp).t == T_ARRAY) {
-                            yyerror("opLogico no sirve para arrays")
+                            yyerror("opLogico no sirve para arrays");
                      }else{
                             (yyval.exp).t = T_LOGICO;
                      } 
@@ -1760,7 +1760,7 @@ yyreduce:
                      if((yyvsp[-2].exp).t != (yyvsp[0].exp).t) {
                             yyerror("Error de tipos en la asignación Igual");
                      } else if ((yyvsp[-2].exp).t == T_ARRAY) {
-                            yyerror("opIgual no sirve para arrays")
+                            yyerror("opIgual no sirve para arrays");
                      }else{
                             (yyval.exp).t = T_LOGICO;
                      }      
@@ -1786,7 +1786,7 @@ yyreduce:
               if((yyvsp[-2].exp).t != T_ERROR && (yyvsp[0].exp).t != T_ERROR)
               {
                      if ((yyvsp[-2].exp).t != (yyvsp[0].exp).t) {
-                            yyerror(E_TYPE_MISMATCH);
+                            yyerror("No tienen el mismo tipo los operadores");
                      } else if ((yyvsp[-2].exp).t == T_LOGICO) {
                             yyerror("opRel no acepta t_logicos");
                      } else {
@@ -1810,7 +1810,7 @@ yyreduce:
   case 57: /* expreAd: expreAd opAd expreMul  */
 #line 468 "src/asin.y"
        {
-              (yyval.exp).t = T_ERROR
+              (yyval.exp).t = T_ERROR;
               if((yyvsp[-2].exp).t != T_ERROR && (yyvsp[0].exp).t != T_ERROR)
               {
                      if((yyvsp[-2].exp).t != T_ENTERO || (yyvsp[0].exp).t != T_ENTERO) {
@@ -1834,7 +1834,7 @@ yyreduce:
   case 59: /* expreMul: expreMul opMul expreUna  */
 #line 485 "src/asin.y"
        {
-              (yyval.exp).t = T_ERROR
+              (yyval.exp).t = T_ERROR;
               if((yyvsp[-2].exp).t != T_ERROR && (yyvsp[0].exp).t != T_ERROR)
               {
                      if((yyvsp[-2].exp).t != T_ENTERO || (yyvsp[0].exp).t != T_ENTERO) {
@@ -1859,14 +1859,14 @@ yyreduce:
 #line 502 "src/asin.y"
        {
               (yyval.exp).t = T_ERROR;
-              if((yyvsp[0].exp) != T_ERROR){
-                     if((yyvsp[0].exp) == T_ENTERO){
+              if((yyvsp[0].exp).t != T_ERROR){
+                     if((yyvsp[0].exp).t == T_ENTERO){
                             if((yyvsp[-1].cent) == ESIG){
                                    yyerror("Operacion ! no es correcta para enteros");
                             } else{
                                    (yyval.exp).t = T_ENTERO;
                             }
-                     }else if ((yyvsp[0].exp) == T_LOGICO){
+                     }else if ((yyvsp[0].exp).t == T_LOGICO){
                             if((yyvsp[-1].cent) == ESIG){
                                    (yyval.exp).t = T_LOGICO;
                             }else{
@@ -1887,8 +1887,8 @@ yyreduce:
   case 62: /* expreSufi: const  */
 #line 529 "src/asin.y"
        {
-              (yyval.exp) = (yyvsp[0].cent);
-              emite(EASIG, crArgEnt((yyvsp[0].cent).d), crArgNul(), crArgPos(niv, (yyval.exp).d));
+              (yyval.exp) = (yyvsp[0].exp);
+              emite(EASIG, crArgEnt((yyvsp[0].exp).d), crArgNul(), crArgPos(niv, (yyval.exp).d));
        }
 #line 1894 "asin.c"
     break;
@@ -1923,7 +1923,7 @@ yyreduce:
               SIMB simb = obtTdS((yyvsp[-3].ident));
               (yyval.exp).t = T_ERROR;
               
-              if((yyvsp[-1].exp) != T_ENTERO){
+              if((yyvsp[-1].exp).t != T_ENTERO){
                      yyerror("Ha de ser tipo entero");
               }
               if(simb.t == T_ARRAY){
@@ -1933,7 +1933,7 @@ yyreduce:
                      yyerror("Identificador ha de ser tipo array");
               }
               (yyval.exp).d = creaVarTemp();
-              emite(EAV, crArgPos(sim.n, sim.d), crArgPos(niv, (yyvsp[-1].exp).d), crArgPos(niv, (yyval.exp).d));
+              emite(EAV, crArgPos(simb.n, simb.d), crArgPos(niv, (yyvsp[-1].exp).d), crArgPos(niv, (yyval.exp).d));
               
        }
 #line 1940 "asin.c"
@@ -1982,7 +1982,7 @@ yyreduce:
 #line 599 "src/asin.y"
        {
               (yyval.cent) = insTdD(-1, (yyvsp[0].exp).t);
-              emite(EPUSH, crgArgNul(), crgArgNul(), crArgPos(niv, (yyvsp[0].exp).d))
+              emite(EPUSH, crgArgNul(), crgArgNul(), crArgPos(niv, (yyvsp[0].exp).d));
        }
 #line 1988 "asin.c"
     break;

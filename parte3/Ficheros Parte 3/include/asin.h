@@ -101,7 +101,7 @@ union YYSTYPE
  
     char* ident; 
     int cent;
-    Exp exp;
+    EXP exp;
 
 #line 107 "asin.h"
 
