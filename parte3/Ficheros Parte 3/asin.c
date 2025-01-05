@@ -143,7 +143,7 @@ enum yysymbol_kind_t
   YYSYMBOL_ID_ = 37,                       /* ID_  */
   YYSYMBOL_YYACCEPT = 38,                  /* $accept  */
   YYSYMBOL_programa = 39,                  /* programa  */
-  YYSYMBOL_40_1 = 40,                      /* $@1  */
+  YYSYMBOL_40_1 = 40,                      /* @1  */
   YYSYMBOL_listDecla = 41,                 /* listDecla  */
   YYSYMBOL_decla = 42,                     /* decla  */
   YYSYMBOL_declaVar = 43,                  /* declaVar  */
@@ -575,15 +575,15 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    40,    40,    40,    56,    60,    69,    73,    79,    84,
-      96,   109,   113,   117,   123,   127,   134,   141,   133,   170,
-     173,   179,   184,   197,   197,   227,   228,   231,   232,   235,
-     236,   237,   238,   239,   242,   246,   249,   261,   275,   287,
-     274,   300,   308,   318,   299,   333,   334,   344,   348,   366,
-     399,   400,   424,   425,   445,   446,   466,   467,   483,   484,
-     500,   501,   528,   533,   537,   549,   567,   589,   592,   598,
-     604,   603,   613,   614,   617,   618,   621,   622,   623,   624,
-     627,   628,   631,   632,   635,   636,   637
+       0,    46,    46,    46,    67,    71,    80,    84,    90,    95,
+     107,   120,   124,   128,   134,   138,   145,   152,   144,   180,
+     183,   189,   194,   207,   207,   237,   238,   241,   242,   245,
+     246,   247,   248,   249,   252,   256,   259,   271,   285,   297,
+     284,   310,   318,   328,   309,   343,   344,   354,   358,   376,
+     409,   410,   434,   435,   455,   456,   476,   477,   493,   494,
+     510,   511,   538,   543,   547,   559,   577,   599,   602,   608,
+     614,   613,   623,   624,   627,   628,   631,   632,   633,   634,
+     637,   638,   641,   642,   645,   646,   647
 };
 #endif
 
@@ -604,7 +604,7 @@ static const char *const yytname[] =
   "CORC_", "TRUE_", "FALSE_", "BOOL_", "BRAA_", "BRAC_", "RETURN_",
   "READ_", "PRINT_", "IF_", "ELSE_", "FOR_", "COMA_", "MAYOR_", "MENOR_",
   "MAYI_", "MENI_", "NOT_", "AND_", "OR_", "EQUALS_", "NOTEQUAL_",
-  "DOU_BAR_", "CTE_", "ID_", "$accept", "programa", "$@1", "listDecla",
+  "DOU_BAR_", "CTE_", "ID_", "$accept", "programa", "@1", "listDecla",
   "decla", "declaVar", "const", "tipoSimp", "declaFunc", "@2", "$@3",
   "paramForm", "listParamForm", "bloque", "@4", "declaVarLocal", "listInt",
   "inst", "instExpre", "instEntSal", "instSelec", "@5", "@6", "instIter",
@@ -1250,74 +1250,79 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 2: /* $@1: %empty  */
-#line 40 "src/asin.y"
+  case 2: /* @1: %empty  */
+#line 46 "src/asin.y"
        {
               dvar = 0;
               niv = 0; 
               si = 0;
               cargaContexto(niv);
+              (yyval.inicio).inc_t = creaLans(si);
+              emite(INCTOP, crArgNul(), crArgNul(), crArgEnt(-1));
+              (yyval.inicio).go_t = creaLans(si);
+              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
+
        }
-#line 1262 "asin.c"
+#line 1267 "asin.c"
     break;
 
-  case 3: /* programa: $@1 listDecla  */
-#line 47 "src/asin.y"
+  case 3: /* programa: @1 listDecla  */
+#line 58 "src/asin.y"
        {
-              printf("n main: %d",(yyvsp[0].cent));
               if((yyvsp[0].cent)!=1){yyerror("Se debe declarar UNA función main()");}
-              mostrarTdS();
-              volcarCodigo("test");
+              completaLans((yyvsp[-1].inicio).inc_t, crArgEnt(dvar));
+              SIMB s = obtTdS("main");
+              completaLans((yyvsp[-1].inicio).go_t, crArgEnt(s.d));
        }
-#line 1273 "asin.c"
+#line 1278 "asin.c"
     break;
 
   case 4: /* listDecla: decla  */
-#line 57 "src/asin.y"
+#line 68 "src/asin.y"
        {
               (yyval.cent) = (yyvsp[0].cent);
        }
-#line 1281 "asin.c"
+#line 1286 "asin.c"
     break;
 
   case 5: /* listDecla: listDecla decla  */
-#line 61 "src/asin.y"
+#line 72 "src/asin.y"
        {
               
               //int primero = $1;
               //int segundo = $2;
               (yyval.cent) = (yyvsp[-1].cent) + (yyvsp[0].cent);
        }
-#line 1292 "asin.c"
+#line 1297 "asin.c"
     break;
 
   case 6: /* decla: declaVar  */
-#line 70 "src/asin.y"
+#line 81 "src/asin.y"
        {
               (yyval.cent) = 0;
        }
-#line 1300 "asin.c"
+#line 1305 "asin.c"
     break;
 
   case 7: /* decla: declaFunc  */
-#line 74 "src/asin.y"
+#line 85 "src/asin.y"
        {
               (yyval.cent) = (yyvsp[0].cent);
        }
-#line 1308 "asin.c"
+#line 1313 "asin.c"
     break;
 
   case 8: /* declaVar: tipoSimp ID_ PUNTC_  */
-#line 80 "src/asin.y"
+#line 91 "src/asin.y"
        {
               if (!insTdS((yyvsp[-1].ident), VARIABLE, (yyvsp[-2].cent), niv, dvar, -1)) yyerror("Identificador repetido");
               else dvar += TALLA_TIPO_SIMPLE;
        }
-#line 1317 "asin.c"
+#line 1322 "asin.c"
     break;
 
   case 9: /* declaVar: tipoSimp ID_ IGUAL_ const PUNTC_  */
-#line 85 "src/asin.y"
+#line 96 "src/asin.y"
        {
               if ((yyvsp[-4].cent) != (yyvsp[-1].exp).t){
                      yyerror("Error de tipos en la inicialización");
@@ -1326,14 +1331,14 @@ yyreduce:
               else 
               {
                      if((yyvsp[-4].cent) != (yyvsp[-1].exp).t) (yyval.cent) = T_ERROR; //yyerror("Error de tipos en la asignación expre1");
-                     else dvar += TALLA_TIPO_SIMPLE;
+                     dvar += TALLA_TIPO_SIMPLE;
               }
        }
-#line 1333 "asin.c"
+#line 1338 "asin.c"
     break;
 
   case 10: /* declaVar: tipoSimp ID_ CORA_ CTE_ CORC_ PUNTC_  */
-#line 97 "src/asin.y"
+#line 108 "src/asin.y"
        {
               int numelem = (yyvsp[-2].cent);
               if ((yyvsp[-2].cent) <= 0) {
@@ -1344,65 +1349,65 @@ yyreduce:
               if (!insTdS((yyvsp[-4].ident), VARIABLE, T_ARRAY, niv, dvar, refe)) yyerror("Identificador repetido");
               else dvar += numelem * TALLA_TIPO_SIMPLE;
        }
-#line 1348 "asin.c"
+#line 1353 "asin.c"
     break;
 
   case 11: /* const: CTE_  */
-#line 110 "src/asin.y"
+#line 121 "src/asin.y"
        {
               (yyval.exp).t = T_ENTERO; (yyval.exp).d = (yyvsp[0].cent);
        }
-#line 1356 "asin.c"
+#line 1361 "asin.c"
     break;
 
   case 12: /* const: TRUE_  */
-#line 114 "src/asin.y"
+#line 125 "src/asin.y"
        {
               (yyval.exp).t = T_LOGICO; (yyval.exp).d = 1;
        }
-#line 1364 "asin.c"
+#line 1369 "asin.c"
     break;
 
   case 13: /* const: FALSE_  */
-#line 118 "src/asin.y"
+#line 129 "src/asin.y"
        {
               (yyval.exp).t = T_LOGICO; (yyval.exp).d = 0;
        }
-#line 1372 "asin.c"
+#line 1377 "asin.c"
     break;
 
   case 14: /* tipoSimp: INT_  */
-#line 124 "src/asin.y"
+#line 135 "src/asin.y"
        {
               (yyval.cent) = T_ENTERO;
        }
-#line 1380 "asin.c"
+#line 1385 "asin.c"
     break;
 
   case 15: /* tipoSimp: BOOL_  */
-#line 128 "src/asin.y"
+#line 139 "src/asin.y"
        {
               (yyval.cent) = T_LOGICO;
        }
-#line 1388 "asin.c"
+#line 1393 "asin.c"
     break;
 
   case 16: /* @2: %empty  */
-#line 134 "src/asin.y"
+#line 145 "src/asin.y"
        {      
               (yyval.cent) = dvar;
               dvar = 0;
               niv++;
               cargaContexto(niv);
        }
-#line 1399 "asin.c"
+#line 1404 "asin.c"
     break;
 
   case 17: /* $@3: %empty  */
-#line 141 "src/asin.y"
+#line 152 "src/asin.y"
        {
               dvar = 0;
-              if(!insTdS((yyvsp[-4].ident), FUNCION, (yyvsp[-5].cent), 0, 0, (yyvsp[-1].cent))) {
+              if(!insTdS((yyvsp[-4].ident), FUNCION, (yyvsp[-5].cent), 0, si, (yyvsp[-1].cent))) {
                      yyerror("Identificador repetido");       
               }
               //if ($5 == -1) {
@@ -1410,13 +1415,12 @@ yyreduce:
                      //$<cent>$ = T_ERROR;
               //}
        }
-#line 1414 "asin.c"
+#line 1419 "asin.c"
     break;
 
   case 18: /* declaFunc: tipoSimp ID_ @2 PARA_ paramForm PARC_ $@3 bloque  */
-#line 152 "src/asin.y"
+#line 163 "src/asin.y"
        {
-              //printf("\n\n%d %d\n\n", $1, $8);
               if ((yyvsp[-7].cent) != (yyvsp[0].cent)) {
                      yyerror("Tipo de retorno incorrecto");
               }
@@ -1430,36 +1434,36 @@ yyreduce:
                      (yyval.cent) = 0;
               }
        }
-#line 1434 "asin.c"
+#line 1438 "asin.c"
     break;
 
   case 19: /* paramForm: %empty  */
-#line 170 "src/asin.y"
+#line 180 "src/asin.y"
        {
               (yyval.cent) = insTdD(-1, T_VACIO);
        }
-#line 1442 "asin.c"
+#line 1446 "asin.c"
     break;
 
   case 20: /* paramForm: listParamForm  */
-#line 174 "src/asin.y"
+#line 184 "src/asin.y"
        {
               (yyval.cent) = (yyvsp[0].cent);
        }
-#line 1450 "asin.c"
+#line 1454 "asin.c"
     break;
 
   case 21: /* listParamForm: tipoSimp ID_  */
-#line 180 "src/asin.y"
+#line 190 "src/asin.y"
        {
               insTdS((yyvsp[0].ident), PARAMETRO, (yyvsp[-1].cent), niv,--dvar, -1);
               (yyval.cent) = insTdD(-1, (yyvsp[-1].cent));
        }
-#line 1459 "asin.c"
+#line 1463 "asin.c"
     break;
 
   case 22: /* listParamForm: tipoSimp ID_ COMA_ listParamForm  */
-#line 185 "src/asin.y"
+#line 195 "src/asin.y"
        { 
               insTdD((yyvsp[0].cent), (yyvsp[-3].cent));
               int tds = insTdS((yyvsp[-2].ident), PARAMETRO, (yyvsp[-3].cent), niv, --dvar, -1);
@@ -1469,22 +1473,22 @@ yyreduce:
               (yyval.cent) = (yyvsp[0].cent);
               
        }
-#line 1473 "asin.c"
+#line 1477 "asin.c"
     break;
 
   case 23: /* @4: %empty  */
-#line 197 "src/asin.y"
+#line 207 "src/asin.y"
        {
               emite(PUSHFP, crArgNul(), crArgNul(), crArgNul());
               emite(FPTOP, crArgNul(), crArgNul(), crArgNul());
               (yyval.cent) = creaLans(si);
               emite(INCTOP, crArgNul(), crArgNul(), crArgEnt(-1));
         }
-#line 1484 "asin.c"
+#line 1488 "asin.c"
     break;
 
   case 24: /* bloque: @4 BRAA_ declaVarLocal listInt RETURN_ expre PUNTC_ BRAC_  */
-#line 204 "src/asin.y"
+#line 214 "src/asin.y"
        {
               INF inf = obtTdD(-1);
               int dir_return = TALLA_SEGENLACES + inf.tsp + TALLA_TIPO_SIMPLE;
@@ -1506,19 +1510,19 @@ yyreduce:
               } 
               (yyval.cent) = (yyvsp[-2].exp).d;
        }
-#line 1510 "asin.c"
+#line 1514 "asin.c"
     break;
 
   case 34: /* instExpre: expre PUNTC_  */
-#line 243 "src/asin.y"
+#line 253 "src/asin.y"
        {
               (yyval.cent) = (yyvsp[-1].exp).t;
        }
-#line 1518 "asin.c"
+#line 1522 "asin.c"
     break;
 
   case 36: /* instEntSal: READ_ PARA_ ID_ PARC_ PUNTC_  */
-#line 250 "src/asin.y"
+#line 260 "src/asin.y"
        {
               SIMB s = obtTdS((yyvsp[-2].ident));
               if (s.t == T_ERROR){
@@ -1530,11 +1534,11 @@ yyreduce:
               }
               emite(EREAD, crArgNul(), crArgNul(), crArgPos(s.n, s.d));
        }
-#line 1534 "asin.c"
+#line 1538 "asin.c"
     break;
 
   case 37: /* instEntSal: PRINT_ PARA_ expre PARC_ PUNTC_  */
-#line 262 "src/asin.y"
+#line 272 "src/asin.y"
        {
               if ((yyvsp[-2].exp).t == T_ERROR){
                      (yyval.cent) = T_ERROR;
@@ -1545,11 +1549,11 @@ yyreduce:
               }
               emite(EWRITE, crArgNul(), crArgNul(), crArgPos(niv, (yyvsp[-2].exp).d));
        }
-#line 1549 "asin.c"
+#line 1553 "asin.c"
     break;
 
   case 38: /* @5: %empty  */
-#line 275 "src/asin.y"
+#line 285 "src/asin.y"
        {
               if((yyvsp[-1].exp).t == T_ERROR){
                      (yyval.cent) = T_ERROR;
@@ -1561,29 +1565,29 @@ yyreduce:
               emite(EIGUAL, crArgPos(niv, (yyvsp[-1].exp).d), crArgEnt(0), crArgEtq(-1)); 
        
        }
-#line 1565 "asin.c"
+#line 1569 "asin.c"
     break;
 
   case 39: /* @6: %empty  */
-#line 287 "src/asin.y"
+#line 297 "src/asin.y"
        {
               (yyval.cent) = creaLans(si);
               emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
               completaLans((yyvsp[-1].cent), crArgEtq(si));
        }
-#line 1575 "asin.c"
+#line 1579 "asin.c"
     break;
 
   case 40: /* instSelec: IF_ PARA_ expre PARC_ @5 inst @6 ELSE_ inst  */
-#line 293 "src/asin.y"
+#line 303 "src/asin.y"
        {
               completaLans((yyvsp[-2].cent), crArgEnt(si));
        }
-#line 1583 "asin.c"
+#line 1587 "asin.c"
     break;
 
   case 41: /* @7: %empty  */
-#line 300 "src/asin.y"
+#line 310 "src/asin.y"
        {
               if (!((yyvsp[-1].exp).t == T_ERROR || (yyvsp[-1].exp).t == T_ENTERO || (yyvsp[-1].exp).t == T_VACIO || (yyvsp[-1].exp).t == T_LOGICO)) {
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
@@ -1591,53 +1595,53 @@ yyreduce:
               }
                (yyval.cent) = si;
        }
-#line 1595 "asin.c"
+#line 1599 "asin.c"
     break;
 
   case 42: /* @8: %empty  */
-#line 308 "src/asin.y"
+#line 318 "src/asin.y"
        {
               if (!((yyvsp[-1].exp).t == T_LOGICO)) {
                      yyerror("La segunda expresión del for ha de ser de tipo LÓGICA");
                      (yyval.cent) = T_ERROR;
               }
-              int igual = creaLans(si); emite(EIGUAL, crArgPos(niv, (yyvsp[-1].exp).d), crArgEnt(1), crArgEtq(-1));
-              int distinto = creaLans(si); emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
-              int si_ant = si;
+              (yyval.for_s).verdad = creaLans(si); emite(EIGUAL, crArgPos(niv, (yyvsp[-1].exp).d), crArgEnt(1), crArgEtq(-1));
+              (yyval.for_s).falso = creaLans(si); emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
+              (yyval.for_s).si_ant = si;
        }
-#line 1609 "asin.c"
+#line 1613 "asin.c"
     break;
 
   case 43: /* $@9: %empty  */
-#line 318 "src/asin.y"
+#line 328 "src/asin.y"
        {
               emite(GOTOS, crArgNul(), crArgNul(), crArgEtq((yyvsp[-5].cent)));
-              completaLans(igual, crArgEnt(si));
+              completaLans((yyvsp[-2].for_s).verdad, crArgEnt(si));
        }
-#line 1618 "asin.c"
+#line 1622 "asin.c"
     break;
 
   case 44: /* instIter: FOR_ PARA_ expreOP PUNTC_ @7 expre PUNTC_ @8 expreOP PARC_ $@9 inst  */
-#line 323 "src/asin.y"
+#line 333 "src/asin.y"
        {
               if (!((yyvsp[-3].exp).t == T_ERROR || (yyvsp[-3].exp).t == T_ENTERO || (yyvsp[-3].exp).t == T_VACIO || (yyvsp[-3].exp).t == T_LOGICO)) {
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
                      (yyval.cent) = T_ERROR;
               }
-              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(si_ant));
-              completaLans(distinto, crArgEnt(si));
+              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq((yyvsp[-4].for_s).si_ant));
+              completaLans((yyvsp[-4].for_s).falso, crArgEnt(si));
        }
-#line 1631 "asin.c"
+#line 1635 "asin.c"
     break;
 
   case 45: /* expreOP: %empty  */
-#line 333 "src/asin.y"
+#line 343 "src/asin.y"
           { (yyval.exp).t = T_VACIO; }
-#line 1637 "asin.c"
+#line 1641 "asin.c"
     break;
 
   case 46: /* expreOP: expre  */
-#line 335 "src/asin.y"
+#line 345 "src/asin.y"
        {      
               (yyval.exp) = (yyvsp[0].exp);
               if (!((yyvsp[0].exp).t == T_ENTERO || (yyvsp[0].exp).t == T_LOGICO)) {
@@ -1645,19 +1649,19 @@ yyreduce:
                      (yyval.exp).t = T_ERROR;
               }
        }
-#line 1649 "asin.c"
+#line 1653 "asin.c"
     break;
 
   case 47: /* expre: expreLogic  */
-#line 345 "src/asin.y"
+#line 355 "src/asin.y"
        {
               (yyval.exp) = (yyvsp[0].exp);
        }
-#line 1657 "asin.c"
+#line 1661 "asin.c"
     break;
 
   case 48: /* expre: ID_ IGUAL_ expre  */
-#line 349 "src/asin.y"
+#line 359 "src/asin.y"
        {
               SIMB sim = obtTdS((yyvsp[-2].ident));
               (yyval.exp).t = T_ERROR;
@@ -1668,18 +1672,18 @@ yyreduce:
                      }
                      //mostrarTdS();
                      else if (!(((sim.t == T_LOGICO) && ((yyvsp[0].exp).t == T_LOGICO)) || ((sim.t == T_ENTERO) && ((yyvsp[0].exp).t == T_ENTERO)))) {
-                            //printf("\n simt : %d\n $3 : %d \n ", sim.t, $3);
+              
                             yyerror("Error de tipos en la asignación expre2");
                      } else (yyval.exp).t = (yyvsp[0].exp).t;
               }
               (yyval.exp).d = creaVarTemp();
               emite(EASIG, crArgPos(niv, (yyvsp[0].exp).d), crArgNul(), crArgPos(sim.n, sim.d));       
        }
-#line 1679 "asin.c"
+#line 1683 "asin.c"
     break;
 
   case 49: /* expre: ID_ CORA_ expre CORC_ IGUAL_ expre  */
-#line 367 "src/asin.y"
+#line 377 "src/asin.y"
        {
               SIMB s = obtTdS((yyvsp[-5].ident));
               //DIM dim = obtTdA(s.ref);
@@ -1710,17 +1714,17 @@ yyreduce:
               }
 
        }
-#line 1714 "asin.c"
+#line 1718 "asin.c"
     break;
 
   case 50: /* expreLogic: expreIgual  */
-#line 399 "src/asin.y"
+#line 409 "src/asin.y"
                         { (yyval.exp) = (yyvsp[0].exp); }
-#line 1720 "asin.c"
+#line 1724 "asin.c"
     break;
 
   case 51: /* expreLogic: expreLogic opLogic expreIgual  */
-#line 401 "src/asin.y"
+#line 411 "src/asin.y"
        {
               (yyval.exp).t = T_ERROR;
               if((yyvsp[-2].exp).t != T_ERROR && (yyvsp[0].exp).t != T_ERROR)
@@ -1742,17 +1746,17 @@ yyreduce:
                 emite(EASIG, crArgEnt(1), crArgNul(), crArgPos(niv, (yyval.exp).d));
               }
        }
-#line 1746 "asin.c"
+#line 1750 "asin.c"
     break;
 
   case 52: /* expreIgual: expreRel  */
-#line 424 "src/asin.y"
+#line 434 "src/asin.y"
                       { (yyval.exp) = (yyvsp[0].exp); }
-#line 1752 "asin.c"
+#line 1756 "asin.c"
     break;
 
   case 53: /* expreIgual: expreIgual opIgual expreRel  */
-#line 426 "src/asin.y"
+#line 436 "src/asin.y"
        {
               (yyval.exp).t = T_ERROR;
               if((yyvsp[-2].exp).t != T_ERROR && (yyvsp[0].exp).t != T_ERROR)
@@ -1770,17 +1774,17 @@ yyreduce:
               emite((yyvsp[-1].cent), crArgPos(niv, (yyvsp[-2].exp).d), crArgPos(niv, (yyvsp[0].exp).d), crArgEtq(si+2));
               emite(EASIG, crArgEnt(0), crArgNul(), crArgPos(niv, (yyval.exp).d));
        }
-#line 1774 "asin.c"
+#line 1778 "asin.c"
     break;
 
   case 54: /* expreRel: expreAd  */
-#line 445 "src/asin.y"
+#line 455 "src/asin.y"
                    { (yyval.exp) = (yyvsp[0].exp); }
-#line 1780 "asin.c"
+#line 1784 "asin.c"
     break;
 
   case 55: /* expreRel: expreRel opRel expreAd  */
-#line 447 "src/asin.y"
+#line 457 "src/asin.y"
        {
               (yyval.exp).t = T_ERROR;
               if((yyvsp[-2].exp).t != T_ERROR && (yyvsp[0].exp).t != T_ERROR)
@@ -1798,17 +1802,17 @@ yyreduce:
               emite((yyvsp[-1].cent), crArgPos(niv, (yyvsp[-2].exp).d), crArgPos(niv, (yyvsp[0].exp).d), crArgEtq(si+2));
               emite(EASIG, crArgEnt(0), crArgNul(), crArgPos(niv, (yyval.exp).d));
        }
-#line 1802 "asin.c"
+#line 1806 "asin.c"
     break;
 
   case 56: /* expreAd: expreMul  */
-#line 466 "src/asin.y"
+#line 476 "src/asin.y"
                    { (yyval.exp) = (yyvsp[0].exp); }
-#line 1808 "asin.c"
+#line 1812 "asin.c"
     break;
 
   case 57: /* expreAd: expreAd opAd expreMul  */
-#line 468 "src/asin.y"
+#line 478 "src/asin.y"
        {
               (yyval.exp).t = T_ERROR;
               if((yyvsp[-2].exp).t != T_ERROR && (yyvsp[0].exp).t != T_ERROR)
@@ -1822,17 +1826,17 @@ yyreduce:
               /***************** Expresi´on a partir de un operador aritm´etico */
               emite((yyvsp[-1].cent), crArgPos(niv, (yyvsp[-2].exp).d), crArgPos(niv, (yyvsp[0].exp).d), crArgPos(niv, (yyval.exp).d));    
        }
-#line 1826 "asin.c"
+#line 1830 "asin.c"
     break;
 
   case 58: /* expreMul: expreUna  */
-#line 483 "src/asin.y"
+#line 493 "src/asin.y"
                     { (yyval.exp) = (yyvsp[0].exp); }
-#line 1832 "asin.c"
+#line 1836 "asin.c"
     break;
 
   case 59: /* expreMul: expreMul opMul expreUna  */
-#line 485 "src/asin.y"
+#line 495 "src/asin.y"
        {
               (yyval.exp).t = T_ERROR;
               if((yyvsp[-2].exp).t != T_ERROR && (yyvsp[0].exp).t != T_ERROR)
@@ -1846,17 +1850,17 @@ yyreduce:
               /***************** Expresi´on a partir de un operador aritm´etico */
               emite((yyvsp[-1].cent), crArgPos(niv, (yyvsp[-2].exp).d), crArgPos(niv, (yyvsp[0].exp).d), crArgPos(niv, (yyval.exp).d));
        }
-#line 1850 "asin.c"
+#line 1854 "asin.c"
     break;
 
   case 60: /* expreUna: expreSufi  */
-#line 500 "src/asin.y"
+#line 510 "src/asin.y"
                      { (yyval.exp) = (yyvsp[0].exp); }
-#line 1856 "asin.c"
+#line 1860 "asin.c"
     break;
 
   case 61: /* expreUna: opUna expreUna  */
-#line 502 "src/asin.y"
+#line 512 "src/asin.y"
        {
               (yyval.exp).t = T_ERROR;
               if((yyvsp[0].exp).t != T_ERROR){
@@ -1881,28 +1885,28 @@ yyreduce:
                      emite((yyvsp[-1].cent), crArgEnt(0), crArgPos(niv, (yyvsp[0].exp).d), crArgPos(niv, (yyval.exp).d));
               }
        }
-#line 1885 "asin.c"
+#line 1889 "asin.c"
     break;
 
   case 62: /* expreSufi: const  */
-#line 529 "src/asin.y"
+#line 539 "src/asin.y"
        {
               (yyval.exp) = (yyvsp[0].exp);
               emite(EASIG, crArgEnt((yyvsp[0].exp).d), crArgNul(), crArgPos(niv, (yyval.exp).d));
        }
-#line 1894 "asin.c"
+#line 1898 "asin.c"
     break;
 
   case 63: /* expreSufi: PARA_ expre PARC_  */
-#line 534 "src/asin.y"
+#line 544 "src/asin.y"
        {
               (yyval.exp) = (yyvsp[-1].exp);
        }
-#line 1902 "asin.c"
+#line 1906 "asin.c"
     break;
 
   case 64: /* expreSufi: ID_  */
-#line 538 "src/asin.y"
+#line 548 "src/asin.y"
        {
               SIMB simb = obtTdS((yyvsp[0].ident));
               (yyval.exp).t = T_ERROR;
@@ -1914,11 +1918,11 @@ yyreduce:
               (yyval.exp).d = creaVarTemp();
               emite(EASIG, crArgPos(simb.n, simb.d), crArgNul(), crArgPos(niv, (yyval.exp).d)); 
        }
-#line 1918 "asin.c"
+#line 1922 "asin.c"
     break;
 
   case 65: /* expreSufi: ID_ CORA_ expre CORC_  */
-#line 550 "src/asin.y"
+#line 560 "src/asin.y"
        {
               SIMB simb = obtTdS((yyvsp[-3].ident));
               (yyval.exp).t = T_ERROR;
@@ -1936,165 +1940,165 @@ yyreduce:
               emite(EAV, crArgPos(simb.n, simb.d), crArgPos(niv, (yyvsp[-1].exp).d), crArgPos(niv, (yyval.exp).d));
               
        }
-#line 1940 "asin.c"
+#line 1944 "asin.c"
     break;
 
   case 66: /* expreSufi: ID_ PARA_ paramAct PARC_  */
-#line 568 "src/asin.y"
+#line 578 "src/asin.y"
        {
               SIMB simb = obtTdS((yyvsp[-3].ident));
               INF inf = obtTdD(simb.ref);
               (yyval.exp).t = T_ERROR;
-              if (sim.t == T_ERROR){ yyerror("El símbolo no debe ser error"); }
+              if (simb.t == T_ERROR){ yyerror("El símbolo no debe ser error"); }
               else if (inf.tipo == T_ERROR){ yyerror("La referencia no debe ser error"); }
               else {
-                     if (!cmpDom(sim.ref, (yyvsp[-1].cent))) { yyerror("Los dominios deben coincidir"); }
+                     if (!cmpDom(simb.ref, (yyvsp[-1].cent))) { yyerror("Los dominios deben coincidir"); }
                      else 
                      { 
                             (yyval.exp).t = inf.tipo; 
-                            emite(CALL,crArgNul(),crArgNul(),crArgEtq(sim.d));
+                            emite(CALL,crArgNul(),crArgNul(),crArgEtq(simb.d));
                             emite(DECTOP,crArgNul(),crArgNul(),crArgEnt(inf.tsp));
                             (yyval.exp).d = creaVarTemp();
                             emite(EPOP,crArgNul(),crArgNul(),crArgPos(niv, (yyval.exp).d));
                      }
               } 
        }
-#line 1963 "asin.c"
+#line 1967 "asin.c"
     break;
 
   case 67: /* paramAct: %empty  */
-#line 589 "src/asin.y"
+#line 599 "src/asin.y"
        {
               (yyval.cent) = insTdD(-1, T_VACIO);
        }
-#line 1971 "asin.c"
+#line 1975 "asin.c"
     break;
 
   case 68: /* paramAct: listParamAct  */
-#line 593 "src/asin.y"
+#line 603 "src/asin.y"
        {
               (yyval.cent) = (yyvsp[0].cent);
        }
-#line 1979 "asin.c"
+#line 1983 "asin.c"
     break;
 
   case 69: /* listParamAct: expre  */
-#line 599 "src/asin.y"
+#line 609 "src/asin.y"
        {
               (yyval.cent) = insTdD(-1, (yyvsp[0].exp).t);
-              emite(EPUSH, crgArgNul(), crgArgNul(), crArgPos(niv, (yyvsp[0].exp).d));
+              emite(EPUSH, crArgNul(), crArgNul(), crArgPos(niv, (yyvsp[0].exp).d));
        }
-#line 1988 "asin.c"
+#line 1992 "asin.c"
     break;
 
   case 70: /* $@10: %empty  */
-#line 604 "src/asin.y"
+#line 614 "src/asin.y"
        {
-              emite(EPUSH,crArgNul(),crArgNul(),crArgPos(niv, (yyvsp[0].exp).d));
+              emite(EPUSH, crArgNul(), crArgNul(), crArgPos(niv, (yyvsp[0].exp).d));
        }
-#line 1996 "asin.c"
+#line 2000 "asin.c"
     break;
 
   case 71: /* listParamAct: expre $@10 COMA_ listParamAct  */
-#line 608 "src/asin.y"
+#line 618 "src/asin.y"
        {      
               (yyval.cent) = insTdD((yyvsp[0].cent), (yyvsp[-3].exp).t);
        }
-#line 2004 "asin.c"
+#line 2008 "asin.c"
     break;
 
   case 72: /* opLogic: AND_  */
-#line 613 "src/asin.y"
+#line 623 "src/asin.y"
                { (yyval.cent) = EMULT; }
-#line 2010 "asin.c"
+#line 2014 "asin.c"
     break;
 
   case 73: /* opLogic: OR_  */
-#line 614 "src/asin.y"
+#line 624 "src/asin.y"
              { (yyval.cent) = ESUM; }
-#line 2016 "asin.c"
+#line 2020 "asin.c"
     break;
 
   case 74: /* opIgual: EQUALS_  */
-#line 617 "src/asin.y"
+#line 627 "src/asin.y"
                   { (yyval.cent) = EIGUAL; }
-#line 2022 "asin.c"
+#line 2026 "asin.c"
     break;
 
   case 75: /* opIgual: NOTEQUAL_  */
-#line 618 "src/asin.y"
+#line 628 "src/asin.y"
                    { (yyval.cent) = EDIST; }
-#line 2028 "asin.c"
+#line 2032 "asin.c"
     break;
 
   case 76: /* opRel: MAYOR_  */
-#line 621 "src/asin.y"
+#line 631 "src/asin.y"
                { (yyval.cent) = EMAY; }
-#line 2034 "asin.c"
+#line 2038 "asin.c"
     break;
 
   case 77: /* opRel: MENOR_  */
-#line 622 "src/asin.y"
+#line 632 "src/asin.y"
                 { (yyval.cent) = EMEN; }
-#line 2040 "asin.c"
+#line 2044 "asin.c"
     break;
 
   case 78: /* opRel: MAYI_  */
-#line 623 "src/asin.y"
+#line 633 "src/asin.y"
                { (yyval.cent) = EMAYEQ; }
-#line 2046 "asin.c"
+#line 2050 "asin.c"
     break;
 
   case 79: /* opRel: MENI_  */
-#line 624 "src/asin.y"
+#line 634 "src/asin.y"
                { (yyval.cent) = EMENEQ; }
-#line 2052 "asin.c"
+#line 2056 "asin.c"
     break;
 
   case 80: /* opAd: MAS_  */
-#line 627 "src/asin.y"
+#line 637 "src/asin.y"
             { (yyval.cent) = ESUM; }
-#line 2058 "asin.c"
+#line 2062 "asin.c"
     break;
 
   case 81: /* opAd: MENOS_  */
-#line 628 "src/asin.y"
+#line 638 "src/asin.y"
                 { (yyval.cent) = EDIF; }
-#line 2064 "asin.c"
+#line 2068 "asin.c"
     break;
 
   case 82: /* opMul: POR_  */
-#line 631 "src/asin.y"
+#line 641 "src/asin.y"
              { (yyval.cent) = EMULT; }
-#line 2070 "asin.c"
+#line 2074 "asin.c"
     break;
 
   case 83: /* opMul: DIV_  */
-#line 632 "src/asin.y"
+#line 642 "src/asin.y"
               { (yyval.cent) = EDIVI; }
-#line 2076 "asin.c"
+#line 2080 "asin.c"
     break;
 
   case 84: /* opUna: MAS_  */
-#line 635 "src/asin.y"
+#line 645 "src/asin.y"
              { (yyval.cent) = ESUM; }
-#line 2082 "asin.c"
+#line 2086 "asin.c"
     break;
 
   case 85: /* opUna: MENOS_  */
-#line 636 "src/asin.y"
+#line 646 "src/asin.y"
                 { (yyval.cent) = EDIF; }
-#line 2088 "asin.c"
+#line 2092 "asin.c"
     break;
 
   case 86: /* opUna: NOT_  */
-#line 637 "src/asin.y"
+#line 647 "src/asin.y"
               { (yyval.cent) = ESIG; }
-#line 2094 "asin.c"
+#line 2098 "asin.c"
     break;
 
 
-#line 2098 "asin.c"
+#line 2102 "asin.c"
 
       default: break;
     }
@@ -2287,5 +2291,5 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 639 "src/asin.y"
+#line 649 "src/asin.y"
 

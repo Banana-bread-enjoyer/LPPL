@@ -14,6 +14,8 @@
     char* ident; 
     int cent;
     EXP exp;
+    INICIO inicio;
+    FORSTRUCT for_s;
 }
 
 %token PARA_ PARC_ MAS_ MENOS_ POR_ DIV_
@@ -28,11 +30,15 @@
 
 %type<cent> tipoSimp opUna opMul opAd opRel opIgual opLogic 
 %type<cent> paramForm listParamForm  paramAct listParamAct
-%type<cent> listInt inst  instExpre instSelec instEntSal instIter
+%type<cent> listInt inst  instExpre instSelec instEntSal
 %type<cent> listDecla declaVar declaFunc decla declaVarLocal bloque
 
 %type<exp> expreMul expreAd expreSufi expreUna expreLogic
 %type<exp> expre expreRel expreIgual expreOP const
+
+%type<inicio> programa
+
+%type<for_s> instIter
 
 %%
 
@@ -42,13 +48,18 @@ programa :
               niv = 0; 
               si = 0;
               cargaContexto(niv);
+              $<inicio>$.inc_t = creaLans(si);
+              emite(INCTOP, crArgNul(), crArgNul(), crArgEnt(-1));
+              $<inicio>$.go_t = creaLans(si);
+              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
+
        }
        listDecla
        {
-              printf("n main: %d",$2);
               if($2!=1){yyerror("Se debe declarar UNA función main()");}
-              mostrarTdS();
-              volcarCodigo("test");
+              completaLans($<inicio>1.inc_t, crArgEnt(dvar));
+              SIMB s = obtTdS("main");
+              completaLans($<inicio>1.go_t, crArgEnt(s.d));
        }
 
        ;
@@ -90,7 +101,7 @@ declaVar : tipoSimp ID_ PUNTC_
               else 
               {
                      if($1 != $4.t) $$ = T_ERROR; //yyerror("Error de tipos en la asignación expre1");
-                     else dvar += TALLA_TIPO_SIMPLE;
+                     dvar += TALLA_TIPO_SIMPLE;
               }
        }
        | tipoSimp ID_ CORA_ CTE_ CORC_ PUNTC_    
@@ -140,7 +151,7 @@ declaFunc : tipoSimp ID_
        PARA_ paramForm PARC_ 
        {
               dvar = 0;
-              if(!insTdS($2, FUNCION, $1, 0, 0, $5)) {
+              if(!insTdS($2, FUNCION, $1, 0, si, $5)) {
                      yyerror("Identificador repetido");       
               }
               //if ($5 == -1) {
@@ -150,7 +161,6 @@ declaFunc : tipoSimp ID_
        }
        bloque
        {
-              //printf("\n\n%d %d\n\n", $1, $8);
               if ($1 != $8) {
                      yyerror("Tipo de retorno incorrecto");
               }
@@ -310,14 +320,14 @@ instIter : FOR_ PARA_ expreOP PUNTC_
                      yyerror("La segunda expresión del for ha de ser de tipo LÓGICA");
                      $<cent>$ = T_ERROR;
               }
-              int igual = creaLans(si); emite(EIGUAL, crArgPos(niv, $6.d), crArgEnt(1), crArgEtq(-1));
-              int distinto = creaLans(si); emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
-              int si_ant = si;
+              $<for_s>$.verdad = creaLans(si); emite(EIGUAL, crArgPos(niv, $6.d), crArgEnt(1), crArgEtq(-1));
+              $<for_s>$.falso = creaLans(si); emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(-1));
+              $<for_s>$.si_ant = si;
        }
        expreOP PARC_ 
        {
               emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>5));
-              completaLans(igual, crArgEnt(si));
+              completaLans($<for_s>8.verdad, crArgEnt(si));
        }
        inst
        {
@@ -325,8 +335,8 @@ instIter : FOR_ PARA_ expreOP PUNTC_
                      yyerror("La primera expresión del for ha de ser de tipo SIMPLE");
                      $<cent>$ = T_ERROR;
               }
-              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq(si_ant));
-              completaLans(distinto, crArgEnt(si));
+              emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<for_s>8.si_ant));
+              completaLans($<for_s>8.falso, crArgEnt(si));
        }
        ;
 
@@ -356,7 +366,7 @@ expre : expreLogic
                      }
                      //mostrarTdS();
                      else if (!(((sim.t == T_LOGICO) && ($3.t == T_LOGICO)) || ((sim.t == T_ENTERO) && ($3.t == T_ENTERO)))) {
-                            //printf("\n simt : %d\n $3 : %d \n ", sim.t, $3);
+              
                             yyerror("Error de tipos en la asignación expre2");
                      } else $$.t = $3.t;
               }
@@ -569,14 +579,14 @@ expreSufi: const
               SIMB simb = obtTdS($1);
               INF inf = obtTdD(simb.ref);
               $$.t = T_ERROR;
-              if (sim.t == T_ERROR){ yyerror("El símbolo no debe ser error"); }
+              if (simb.t == T_ERROR){ yyerror("El símbolo no debe ser error"); }
               else if (inf.tipo == T_ERROR){ yyerror("La referencia no debe ser error"); }
               else {
-                     if (!cmpDom(sim.ref, $3)) { yyerror("Los dominios deben coincidir"); }
+                     if (!cmpDom(simb.ref, $3)) { yyerror("Los dominios deben coincidir"); }
                      else 
                      { 
                             $$.t = inf.tipo; 
-                            emite(CALL,crArgNul(),crArgNul(),crArgEtq(sim.d));
+                            emite(CALL,crArgNul(),crArgNul(),crArgEtq(simb.d));
                             emite(DECTOP,crArgNul(),crArgNul(),crArgEnt(inf.tsp));
                             $$.d = creaVarTemp();
                             emite(EPOP,crArgNul(),crArgNul(),crArgPos(niv, $$.d));
@@ -598,11 +608,11 @@ paramAct :
 listParamAct : expre 
        {
               $$ = insTdD(-1, $1.t);
-              emite(EPUSH, crgArgNul(), crgArgNul(), crArgPos(niv, $1.d));
+              emite(EPUSH, crArgNul(), crArgNul(), crArgPos(niv, $1.d));
        }
        | expre
        {
-              emite(EPUSH,crArgNul(),crArgNul(),crArgPos(niv, $1.d));
+              emite(EPUSH, crArgNul(), crArgNul(), crArgPos(niv, $1.d));
        }
        COMA_ listParamAct
        {      

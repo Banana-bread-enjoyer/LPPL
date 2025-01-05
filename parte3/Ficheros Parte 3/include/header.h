@@ -11,6 +11,16 @@ typedef struct exp { /****** Estructura para las expresiones */
     int d;
 } EXP;
 
+typedef struct for_s { /****** Estructura para las expresiones */ 
+    int verdad;
+    int falso;
+    int si_ant;
+} FORSTRUCT;
+
+typedef struct inicio{
+    int inc_t;
+    int go_t;
+} INICIO;
 /****************************************************** Constantes generales */
 #define TRUE  1
 #define FALSE 0

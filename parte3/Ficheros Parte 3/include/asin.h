@@ -102,8 +102,10 @@ union YYSTYPE
     char* ident; 
     int cent;
     EXP exp;
+    INICIO inicio;
+    FORSTRUCT for_s;
 
-#line 107 "asin.h"
+#line 109 "asin.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
