@@ -430,7 +430,7 @@ expreLogic : expreIgual { $$ = $1; }
                 emite(EMULT, crArgPos(niv, $1.d), crArgPos(niv, $3.d), crArgPos(niv, $$.d));
               } else {
                 emite(ESUM, crArgPos(niv, $1.d), crArgPos(niv, $3.d), crArgPos(niv, $$.d));
-                emite(EMENEQ, crArgPos(niv, $$.d), crArgEnt(1), crArgEtq(si+2));
+                emite(EMEN, crArgPos(niv, $$.d), crArgEnt(1), crArgEtq(si+2));
                 emite(EASIG, crArgEnt(1), crArgNul(), crArgPos(niv, $$.d));
               }
        }
@@ -518,13 +518,13 @@ expreUna : expreSufi { $$ = $1; }
               $$.t = T_ERROR;
               if($2.t != T_ERROR){
                      if($2.t == T_ENTERO){
-                            if($1 == ESIG){
+                            if($1 == 2){
                                    yyerror("Operacion ! no es correcta para enteros");
                             } else{
                                    $$.t = T_ENTERO;
                             }
                      }else if ($2.t == T_LOGICO){
-                            if($1 == ESIG){
+                            if($1 == 2){
                                    $$.t = T_LOGICO;
                             }else{
                                    yyerror("Operacion + / - no son correctas para booleanos");
@@ -532,17 +532,21 @@ expreUna : expreSufi { $$ = $1; }
                      }
               }
               $$.d = creaVarTemp();
-              if ($1 == ESIG) {
-                     emite(EDIF, crArgEnt(1), crArgPos(niv, $2.d), crArgPos(niv, $$.d));    
-              } else {
-                     emite($1, crArgEnt(0), crArgPos(niv, $2.d), crArgPos(niv, $$.d));
+              if ($1 == 0) {
+              
+              } else if ($1 == 1){
+                     emite(ESIG, crArgPos(niv, $2.d), crArgNul(), crArgPos(niv, $$.d));      
+              }
+              else{
+                     emite(EDIF, crArgEnt(1), crArgPos(niv, $2.d), crArgPos(niv, $$.d));
               }
        }
        ;
 
 expreSufi: const
        {
-              $$ = $1;
+              $$.t = $1.t;
+              $$.d = creaVarTemp();
               emite(EASIG, crArgEnt($1.d), crArgNul(), crArgPos(niv, $$.d));
        }
        | PARA_ expre PARC_
@@ -647,8 +651,8 @@ opMul : POR_ { $$ = EMULT; }
        | DIV_ { $$ = EDIVI; }
        ;
 
-opUna : MAS_ { $$ = ESUM; }
-       | MENOS_ { $$ = EDIF; }
-       | NOT_ { $$ = ESIG; }
+opUna : MAS_ {$$ = 0; }
+       | MENOS_ { $$ = 1; }
+       | NOT_ { $$ = 2; }
        ;
 %%

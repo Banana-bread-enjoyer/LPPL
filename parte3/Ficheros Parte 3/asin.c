@@ -581,9 +581,9 @@ static const yytype_int16 yyrline[] =
      251,   252,   253,   254,   257,   261,   264,   276,   290,   302,
      289,   315,   323,   333,   314,   348,   349,   359,   363,   381,
      414,   415,   439,   440,   460,   461,   481,   482,   498,   499,
-     515,   516,   543,   548,   552,   564,   582,   604,   607,   613,
-     619,   618,   628,   629,   632,   633,   636,   637,   638,   639,
-     642,   643,   646,   647,   650,   651,   652
+     515,   516,   546,   552,   556,   568,   586,   608,   611,   617,
+     623,   622,   632,   633,   636,   637,   640,   641,   642,   643,
+     646,   647,   650,   651,   654,   655,   656
 };
 #endif
 
@@ -1747,7 +1747,7 @@ yyreduce:
                 emite(EMULT, crArgPos(niv, (yyvsp[-2].exp).d), crArgPos(niv, (yyvsp[0].exp).d), crArgPos(niv, (yyval.exp).d));
               } else {
                 emite(ESUM, crArgPos(niv, (yyvsp[-2].exp).d), crArgPos(niv, (yyvsp[0].exp).d), crArgPos(niv, (yyval.exp).d));
-                emite(EMENEQ, crArgPos(niv, (yyval.exp).d), crArgEnt(1), crArgEtq(si+2));
+                emite(EMEN, crArgPos(niv, (yyval.exp).d), crArgEnt(1), crArgEtq(si+2));
                 emite(EASIG, crArgEnt(1), crArgNul(), crArgPos(niv, (yyval.exp).d));
               }
        }
@@ -1870,13 +1870,13 @@ yyreduce:
               (yyval.exp).t = T_ERROR;
               if((yyvsp[0].exp).t != T_ERROR){
                      if((yyvsp[0].exp).t == T_ENTERO){
-                            if((yyvsp[-1].cent) == ESIG){
+                            if((yyvsp[-1].cent) == 2){
                                    yyerror("Operacion ! no es correcta para enteros");
                             } else{
                                    (yyval.exp).t = T_ENTERO;
                             }
                      }else if ((yyvsp[0].exp).t == T_LOGICO){
-                            if((yyvsp[-1].cent) == ESIG){
+                            if((yyvsp[-1].cent) == 2){
                                    (yyval.exp).t = T_LOGICO;
                             }else{
                                    yyerror("Operacion + / - no son correctas para booleanos");
@@ -1884,34 +1884,38 @@ yyreduce:
                      }
               }
               (yyval.exp).d = creaVarTemp();
-              if ((yyvsp[-1].cent) == ESIG) {
-                     emite(EDIF, crArgEnt(1), crArgPos(niv, (yyvsp[0].exp).d), crArgPos(niv, (yyval.exp).d));    
-              } else {
-                     emite((yyvsp[-1].cent), crArgEnt(0), crArgPos(niv, (yyvsp[0].exp).d), crArgPos(niv, (yyval.exp).d));
+              if ((yyvsp[-1].cent) == 0) {
+              
+              } else if ((yyvsp[-1].cent) == 1){
+                     emite(ESIG, crArgPos(niv, (yyvsp[0].exp).d), crArgNul(), crArgPos(niv, (yyval.exp).d));      
+              }
+              else{
+                     emite(EDIF, crArgEnt(1), crArgPos(niv, (yyvsp[0].exp).d), crArgPos(niv, (yyval.exp).d));
               }
        }
-#line 1894 "asin.c"
+#line 1897 "asin.c"
     break;
 
   case 62: /* expreSufi: const  */
-#line 544 "src/asin.y"
+#line 547 "src/asin.y"
        {
-              (yyval.exp) = (yyvsp[0].exp);
+              (yyval.exp).t = (yyvsp[0].exp).t;
+              (yyval.exp).d = creaVarTemp();
               emite(EASIG, crArgEnt((yyvsp[0].exp).d), crArgNul(), crArgPos(niv, (yyval.exp).d));
        }
-#line 1903 "asin.c"
+#line 1907 "asin.c"
     break;
 
   case 63: /* expreSufi: PARA_ expre PARC_  */
-#line 549 "src/asin.y"
+#line 553 "src/asin.y"
        {
               (yyval.exp) = (yyvsp[-1].exp);
        }
-#line 1911 "asin.c"
+#line 1915 "asin.c"
     break;
 
   case 64: /* expreSufi: ID_  */
-#line 553 "src/asin.y"
+#line 557 "src/asin.y"
        {
               SIMB simb = obtTdS((yyvsp[0].ident));
               (yyval.exp).t = T_ERROR;
@@ -1923,11 +1927,11 @@ yyreduce:
               (yyval.exp).d = creaVarTemp();
               emite(EASIG, crArgPos(simb.n, simb.d), crArgNul(), crArgPos(niv, (yyval.exp).d)); 
        }
-#line 1927 "asin.c"
+#line 1931 "asin.c"
     break;
 
   case 65: /* expreSufi: ID_ CORA_ expre CORC_  */
-#line 565 "src/asin.y"
+#line 569 "src/asin.y"
        {
               SIMB simb = obtTdS((yyvsp[-3].ident));
               (yyval.exp).t = T_ERROR;
@@ -1945,11 +1949,11 @@ yyreduce:
               emite(EAV, crArgPos(simb.n, simb.d), crArgPos(niv, (yyvsp[-1].exp).d), crArgPos(niv, (yyval.exp).d));
               
        }
-#line 1949 "asin.c"
+#line 1953 "asin.c"
     break;
 
   case 66: /* expreSufi: ID_ PARA_ paramAct PARC_  */
-#line 583 "src/asin.y"
+#line 587 "src/asin.y"
        {
               SIMB simb = obtTdS((yyvsp[-3].ident));
               INF inf = obtTdD(simb.ref);
@@ -1968,142 +1972,142 @@ yyreduce:
                      }
               } 
        }
-#line 1972 "asin.c"
+#line 1976 "asin.c"
     break;
 
   case 67: /* paramAct: %empty  */
-#line 604 "src/asin.y"
+#line 608 "src/asin.y"
        {
               (yyval.cent) = insTdD(-1, T_VACIO);
        }
-#line 1980 "asin.c"
+#line 1984 "asin.c"
     break;
 
   case 68: /* paramAct: listParamAct  */
-#line 608 "src/asin.y"
+#line 612 "src/asin.y"
        {
               (yyval.cent) = (yyvsp[0].cent);
        }
-#line 1988 "asin.c"
+#line 1992 "asin.c"
     break;
 
   case 69: /* listParamAct: expre  */
-#line 614 "src/asin.y"
+#line 618 "src/asin.y"
        {
               (yyval.cent) = insTdD(-1, (yyvsp[0].exp).t);
               emite(EPUSH, crArgNul(), crArgNul(), crArgPos(niv, (yyvsp[0].exp).d));
        }
-#line 1997 "asin.c"
+#line 2001 "asin.c"
     break;
 
   case 70: /* $@10: %empty  */
-#line 619 "src/asin.y"
+#line 623 "src/asin.y"
        {
               emite(EPUSH, crArgNul(), crArgNul(), crArgPos(niv, (yyvsp[0].exp).d));
        }
-#line 2005 "asin.c"
+#line 2009 "asin.c"
     break;
 
   case 71: /* listParamAct: expre $@10 COMA_ listParamAct  */
-#line 623 "src/asin.y"
+#line 627 "src/asin.y"
        {      
               (yyval.cent) = insTdD((yyvsp[0].cent), (yyvsp[-3].exp).t);
        }
-#line 2013 "asin.c"
+#line 2017 "asin.c"
     break;
 
   case 72: /* opLogic: AND_  */
-#line 628 "src/asin.y"
+#line 632 "src/asin.y"
                { (yyval.cent) = EMULT; }
-#line 2019 "asin.c"
+#line 2023 "asin.c"
     break;
 
   case 73: /* opLogic: OR_  */
-#line 629 "src/asin.y"
+#line 633 "src/asin.y"
              { (yyval.cent) = ESUM; }
-#line 2025 "asin.c"
+#line 2029 "asin.c"
     break;
 
   case 74: /* opIgual: EQUALS_  */
-#line 632 "src/asin.y"
+#line 636 "src/asin.y"
                   { (yyval.cent) = EIGUAL; }
-#line 2031 "asin.c"
+#line 2035 "asin.c"
     break;
 
   case 75: /* opIgual: NOTEQUAL_  */
-#line 633 "src/asin.y"
+#line 637 "src/asin.y"
                    { (yyval.cent) = EDIST; }
-#line 2037 "asin.c"
+#line 2041 "asin.c"
     break;
 
   case 76: /* opRel: MAYOR_  */
-#line 636 "src/asin.y"
+#line 640 "src/asin.y"
                { (yyval.cent) = EMAY; }
-#line 2043 "asin.c"
+#line 2047 "asin.c"
     break;
 
   case 77: /* opRel: MENOR_  */
-#line 637 "src/asin.y"
+#line 641 "src/asin.y"
                 { (yyval.cent) = EMEN; }
-#line 2049 "asin.c"
+#line 2053 "asin.c"
     break;
 
   case 78: /* opRel: MAYI_  */
-#line 638 "src/asin.y"
+#line 642 "src/asin.y"
                { (yyval.cent) = EMAYEQ; }
-#line 2055 "asin.c"
+#line 2059 "asin.c"
     break;
 
   case 79: /* opRel: MENI_  */
-#line 639 "src/asin.y"
+#line 643 "src/asin.y"
                { (yyval.cent) = EMENEQ; }
-#line 2061 "asin.c"
+#line 2065 "asin.c"
     break;
 
   case 80: /* opAd: MAS_  */
-#line 642 "src/asin.y"
+#line 646 "src/asin.y"
             { (yyval.cent) = ESUM; }
-#line 2067 "asin.c"
+#line 2071 "asin.c"
     break;
 
   case 81: /* opAd: MENOS_  */
-#line 643 "src/asin.y"
+#line 647 "src/asin.y"
                 { (yyval.cent) = EDIF; }
-#line 2073 "asin.c"
+#line 2077 "asin.c"
     break;
 
   case 82: /* opMul: POR_  */
-#line 646 "src/asin.y"
+#line 650 "src/asin.y"
              { (yyval.cent) = EMULT; }
-#line 2079 "asin.c"
+#line 2083 "asin.c"
     break;
 
   case 83: /* opMul: DIV_  */
-#line 647 "src/asin.y"
+#line 651 "src/asin.y"
               { (yyval.cent) = EDIVI; }
-#line 2085 "asin.c"
+#line 2089 "asin.c"
     break;
 
   case 84: /* opUna: MAS_  */
-#line 650 "src/asin.y"
-             { (yyval.cent) = ESUM; }
-#line 2091 "asin.c"
+#line 654 "src/asin.y"
+             {(yyval.cent) = 0; }
+#line 2095 "asin.c"
     break;
 
   case 85: /* opUna: MENOS_  */
-#line 651 "src/asin.y"
-                { (yyval.cent) = EDIF; }
-#line 2097 "asin.c"
+#line 655 "src/asin.y"
+                { (yyval.cent) = 1; }
+#line 2101 "asin.c"
     break;
 
   case 86: /* opUna: NOT_  */
-#line 652 "src/asin.y"
-              { (yyval.cent) = ESIG; }
-#line 2103 "asin.c"
+#line 656 "src/asin.y"
+              { (yyval.cent) = 2; }
+#line 2107 "asin.c"
     break;
 
 
-#line 2107 "asin.c"
+#line 2111 "asin.c"
 
       default: break;
     }
@@ -2296,5 +2300,5 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 654 "src/asin.y"
+#line 658 "src/asin.y"
 
