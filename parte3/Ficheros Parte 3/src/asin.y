@@ -101,7 +101,9 @@ declaVar : tipoSimp ID_ PUNTC_
               else 
               {
                      if($1 != $4.t) $$ = T_ERROR; //yyerror("Error de tipos en la asignación expre1");
+                     emite(EASIG, crArgEnt($4.d),crArgNul(), crArgPos(niv,dvar));
                      dvar += TALLA_TIPO_SIMPLE;
+                     
               }
        }
        | tipoSimp ID_ CORA_ CTE_ CORC_ PUNTC_    
@@ -161,7 +163,9 @@ declaFunc : tipoSimp ID_
        }
        bloque
        {
-              if ($1 != $8) {
+              if($1 != T_ERROR)
+                     $$ = T_ERROR;
+              else if ($1 != $8) {
                      yyerror("Tipo de retorno incorrecto");
               }
               dvar = $<cent>3;
@@ -214,6 +218,7 @@ bloque :
        {
               INF inf = obtTdD(-1);
               int dir_return = TALLA_SEGENLACES + inf.tsp + TALLA_TIPO_SIMPLE;
+              completaLans($<cent>1, crArgEnt(dvar)); 
               emite(EASIG, crArgPos(niv, $6.d), crArgNul(), crArgPos(niv, -dir_return));
               emite(TOPFP, crArgNul(), crArgNul(), crArgNul());
               emite(FPPOP, crArgNul(), crArgNul(), crArgNul());
